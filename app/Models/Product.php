@@ -1,0 +1,99 @@
+<?php
+
+namespace App\Models;
+
+use App\Concerns\BelongsToWorkspace;
+use Database\Factories\ProductFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
+
+class Product extends Model
+{
+    /** @use HasFactory<ProductFactory> */
+    use BelongsToWorkspace, HasFactory;
+
+    protected $fillable = [
+        'workspace_id',
+        'category_id',
+        'name',
+        'sku',
+        'description',
+        'image_path',
+        'price',
+        'cost',
+        'stock_quantity',
+        'is_active',
+    ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'price' => 'decimal:2',
+            'cost' => 'decimal:2',
+            'stock_quantity' => 'integer',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * @return Attribute<string|null, never>
+     */
+    protected function imageUrl(): Attribute
+    {
+        return Attribute::get(function (): ?string {
+            if (! $this->image_path) {
+                return null;
+            }
+
+            return Storage::disk('public')->url($this->image_path);
+        });
+    }
+
+    protected static function booted(): void
+    {
+        static::updating(function (Product $product): void {
+            $original = $product->getOriginal('image_path');
+
+            if ($product->isDirty('image_path') && $original) {
+                Storage::disk('public')->delete($original);
+            }
+        });
+
+        static::deleting(function (Product $product): void {
+            if ($product->image_path) {
+                Storage::disk('public')->delete($product->image_path);
+            }
+        });
+    }
+
+    #[Scope]
+    protected function active(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    #[Scope]
+    protected function inStock(Builder $query): Builder
+    {
+        return $query->where('stock_quantity', '>', 0);
+    }
+
+    #[Scope]
+    protected function lowStock(Builder $query): Builder
+    {
+        return $query->where('stock_quantity', '<=', 5);
+    }
+}
