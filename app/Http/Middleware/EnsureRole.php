@@ -22,7 +22,7 @@ class EnsureRole
             abort(403);
         }
 
-        $userRole = $user->role instanceof \BackedEnum ? $user->role->value : (string) $user->role;
+        $userRole = $user->role->value;
 
         if (! in_array($userRole, $roles, true)) {
             abort(403);

@@ -7,6 +7,7 @@ php artisan storage:link
 ```
 
 This creates `public/storage` → `storage/app/public`, which is required for:
+
 - Product images (`products/{workspace_id}/...`)
 - Category images (`categories/{workspace_id}/...`)
 - Workspace logos (`workspace-logos/...`)

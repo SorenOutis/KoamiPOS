@@ -1,7 +1,13 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { formatCurrency } from '@/lib/format';
 import { dashboard } from '@/routes';
 import type { Auth } from '@/types/auth';
@@ -40,8 +46,14 @@ export default function Dashboard() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex flex-wrap items-center gap-2">
-                            {workspace ? `Workspace: ${workspace.name}` : 'No workspace joined'}
-                            {role && <Badge variant="secondary">{String(role)}</Badge>}
+                            {workspace
+                                ? `Workspace: ${workspace.name}`
+                                : 'No workspace joined'}
+                            {role && (
+                                <Badge variant="secondary">
+                                    {String(role)}
+                                </Badge>
+                            )}
                         </CardTitle>
                         <CardDescription>
                             {workspace
@@ -59,33 +71,39 @@ export default function Dashboard() {
                 {recentActivity.length > 0 && (
                     <Card className="shrink-0">
                         <CardHeader className="shrink-0">
-                            <CardTitle className="text-base">Recent Activity</CardTitle>
-                            <CardDescription>Last 3 completed sales</CardDescription>
+                            <CardTitle className="text-base">
+                                Recent Activity
+                            </CardTitle>
+                            <CardDescription>
+                                Last 3 completed sales
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-wrap gap-2">
                             {recentActivity.map((order) => (
                                 <Link
                                     key={order.id}
                                     href={`/pos/sales/${order.id}`}
-                                    className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 hover:bg-muted transition"
+                                    className="bg-muted/30 hover:bg-muted flex items-center gap-2 rounded-lg border px-3 py-2 transition"
                                 >
-                                    <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                                    <span className="bg-muted text-muted-foreground shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium">
                                         #{order.id}
                                     </span>
                                     <span className="text-sm tabular-nums">
                                         {formatCurrency(order.total)}
                                     </span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-muted-foreground text-xs">
                                         ·
                                     </span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-muted-foreground text-xs">
                                         {order.cashier_name ?? 'Unknown'}
                                     </span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-muted-foreground text-xs">
                                         ·
                                     </span>
-                                    <span className="text-xs text-muted-foreground">
-                                        {new Date(order.created_at).toLocaleTimeString([], {
+                                    <span className="text-muted-foreground text-xs">
+                                        {new Date(
+                                            order.created_at,
+                                        ).toLocaleTimeString([], {
                                             hour: '2-digit',
                                             minute: '2-digit',
                                         })}
@@ -99,8 +117,13 @@ export default function Dashboard() {
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     <Card className="overflow-hidden">
                         <CardHeader className="shrink-0">
-                            <CardTitle className="text-base">Today&apos;s Sales</CardTitle>
-                            <CardDescription>Cash register summary for {new Date().toLocaleDateString()}</CardDescription>
+                            <CardTitle className="text-base">
+                                Today&apos;s Sales
+                            </CardTitle>
+                            <CardDescription>
+                                Cash register summary for{' '}
+                                {new Date().toLocaleDateString()}
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {today ? (
@@ -109,21 +132,29 @@ export default function Dashboard() {
                                         {formatCurrency(today.revenue)}
                                     </div>
                                     <div className="grid gap-1 text-sm">
-                                        <div className="flex justify-between text-muted-foreground">
+                                        <div className="text-muted-foreground flex justify-between">
                                             <span>Transactions</span>
-                                            <span className="tabular-nums">{today.count}</span>
+                                            <span className="tabular-nums">
+                                                {today.count}
+                                            </span>
                                         </div>
                                         {today.avgTicket != null && (
-                                            <div className="flex justify-between text-muted-foreground">
+                                            <div className="text-muted-foreground flex justify-between">
                                                 <span>Average ticket</span>
-                                                <span className="tabular-nums">{formatCurrency(today.avgTicket)}</span>
+                                                <span className="tabular-nums">
+                                                    {formatCurrency(
+                                                        today.avgTicket,
+                                                    )}
+                                                </span>
                                             </div>
                                         )}
                                     </div>
                                 </>
                             ) : (
-                                <div className="space-y-2 text-sm text-muted-foreground">
-                                    <p className="text-2xl font-semibold tabular-nums">—</p>
+                                <div className="text-muted-foreground space-y-2 text-sm">
+                                    <p className="text-2xl font-semibold tabular-nums">
+                                        —
+                                    </p>
                                     <p>No sales recorded today.</p>
                                 </div>
                             )}
@@ -132,15 +163,15 @@ export default function Dashboard() {
 
                     <Card className="overflow-hidden">
                         <CardHeader className="shrink-0">
-                            <CardTitle className="text-base">Quick Actions</CardTitle>
-                            <CardDescription>Common cashier tasks</CardDescription>
+                            <CardTitle className="text-base">
+                                Quick Actions
+                            </CardTitle>
+                            <CardDescription>
+                                Common cashier tasks
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            <Button
-                                className="w-full"
-                                asChild
-                                size="lg"
-                            >
+                            <Button className="w-full" asChild size="lg">
                                 <Link href="/pos">Open Register</Link>
                             </Button>
                             <Button
@@ -162,63 +193,83 @@ export default function Dashboard() {
 
                     <Card className="overflow-hidden">
                         <CardHeader className="shrink-0">
-                            <CardTitle className="text-base">Needs Attention</CardTitle>
-                            <CardDescription>Low stock and recent sales</CardDescription>
+                            <CardTitle className="text-base">
+                                Needs Attention
+                            </CardTitle>
+                            <CardDescription>
+                                Low stock and recent sales
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="flex min-h-0 flex-col gap-4">
                             {lowStockCount > 0 ? (
                                 <div className="flex items-center gap-2 rounded-lg border border-dashed px-3 py-2">
-                                    <div className="shrink-0 rounded-full bg-amber-500/20 px-2 py-0.5 text-amber-500 text-xs font-medium">
+                                    <div className="shrink-0 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-500">
                                         LOW STOCK
                                     </div>
-                                    <span className="text-sm tabular-nums">{lowStockCount} product{lowStockCount === 1 ? '' : 's'} low on stock</span>
+                                    <span className="text-sm tabular-nums">
+                                        {lowStockCount} product
+                                        {lowStockCount === 1 ? '' : 's'} low on
+                                        stock
+                                    </span>
                                 </div>
                             ) : (
-                                <div className="rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">
+                                <div className="text-muted-foreground rounded-lg border border-dashed px-3 py-2 text-sm">
                                     All products adequately stocked.
                                 </div>
                             )}
 
                             {recentOrders.length > 0 && (
                                 <>
-                                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                    <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                                         Recent Sales
                                     </div>
-                                    <div className="max-h-[180px] overflow-y-auto space-y-2">
+                                    <div className="max-h-[180px] space-y-2 overflow-y-auto">
                                         {recentOrders.map((order) => (
                                             <div
                                                 key={order.id}
-                                                className="rounded-lg border bg-muted/30 p-2"
+                                                className="bg-muted/30 rounded-lg border p-2"
                                             >
                                                 <div className="flex items-center justify-between text-xs">
                                                     <span className="text-muted-foreground">
                                                         #{order.id}
                                                     </span>
                                                     <span className="text-muted-foreground">
-                                                        {new Date(order.created_at).toLocaleTimeString()}
+                                                        {new Date(
+                                                            order.created_at,
+                                                        ).toLocaleTimeString()}
                                                     </span>
                                                 </div>
                                                 <div className="mt-1 flex items-center justify-between text-sm">
                                                     <span className="text-muted-foreground">
-                                                        {formatCurrency(order.subtotal)}
-                                                        {order.discount > 0 ? ` − ${formatCurrency(order.discount)}` : ''}
+                                                        {formatCurrency(
+                                                            order.subtotal,
+                                                        )}
+                                                        {order.discount > 0
+                                                            ? ` − ${formatCurrency(order.discount)}`
+                                                            : ''}
                                                     </span>
                                                     <span className="font-medium tabular-nums">
-                                                        {formatCurrency(order.total)}                                                    </span>
+                                                        {formatCurrency(
+                                                            order.total,
+                                                        )}{' '}
+                                                    </span>
                                                 </div>
-                                                <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                                                        <span>{order.payment_method}</span>
-                                                    </div>
+                                                <div className="text-muted-foreground mt-1 flex items-center justify-between text-xs">
+                                                    <span>
+                                                        {order.payment_method}
+                                                    </span>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
                                 </>
                             )}
-                            {recentOrders.length === 0 && lowStockCount === 0 && (
-                                <div className="text-sm text-muted-foreground">
-                                    Nothing needs attention right now.
-                                </div>
-                            )}
+                            {recentOrders.length === 0 &&
+                                lowStockCount === 0 && (
+                                    <div className="text-muted-foreground text-sm">
+                                        Nothing needs attention right now.
+                                    </div>
+                                )}
                         </CardContent>
                     </Card>
                 </div>

@@ -33,13 +33,28 @@ class OrderItem extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function releaseStock(): void
+    {
+        if ($this->product_id === null) {
+            return;
+        }
+
+        $this->product()->increment('stock_quantity', $this->quantity);
     }
 }

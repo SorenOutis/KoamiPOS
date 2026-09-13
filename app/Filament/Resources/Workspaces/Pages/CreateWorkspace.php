@@ -21,9 +21,12 @@ class CreateWorkspace extends CreateRecord
      */
     protected function handleRecordCreation(array $data): Model
     {
-        $adminName = $this->form->getRawState()['admin_name'] ?? $data['admin_name'] ?? null;
-        $adminEmail = $this->form->getRawState()['admin_email'] ?? $data['admin_email'] ?? null;
-        $adminPassword = $this->form->getRawState()['admin_password'] ?? $data['admin_password'] ?? null;
+        $rawState = $this->form->getRawState();
+        $rawState = is_array($rawState) ? $rawState : [];
+
+        $adminName = $rawState['admin_name'] ?? $data['admin_name'] ?? null;
+        $adminEmail = $rawState['admin_email'] ?? $data['admin_email'] ?? null;
+        $adminPassword = $rawState['admin_password'] ?? $data['admin_password'] ?? null;
 
         // Fallback to dehydrated state when available (Filament v4 keeps dehydrated(false) out of $data).
         $formState = $this->form->getState();

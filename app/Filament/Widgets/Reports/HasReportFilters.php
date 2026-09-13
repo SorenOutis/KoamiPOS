@@ -41,6 +41,7 @@ trait HasReportFilters
 
     /**
      * @param  array<int, array<string, mixed>>  $rows
+     * @return LengthAwarePaginator<int, array<string, mixed>>
      */
     protected function paginateRows(array $rows, int $page, int $perPage, ?string $sortColumn, ?string $sortDirection): LengthAwarePaginator
     {

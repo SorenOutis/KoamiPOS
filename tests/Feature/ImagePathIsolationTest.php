@@ -3,7 +3,6 @@
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Workspace;
-use Database\Seeders\WorkspaceCatalogSeeder;
 use Illuminate\Support\Facades\Storage;
 
 test('product image paths are isolated per workspace', function () {
