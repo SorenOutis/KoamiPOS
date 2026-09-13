@@ -31,7 +31,7 @@ class ProductForm
                         'category',
                         'name',
                         modifyQueryUsing: function ($query, callable $get) use ($authUser, $isAdmin) {
-                            if ($isAdmin && $authUser?->workspace_id) {
+                            if ($isAdmin && $authUser->workspace_id) {
                                 return $query->where('workspace_id', $authUser->workspace_id);
                             }
 
@@ -63,6 +63,7 @@ class ProductForm
                     ->disk('public')
                     ->directory(function (callable $get) {
                         $workspaceId = $get('workspace_id');
+
                         return $workspaceId
                             ? "products/{$workspaceId}"
                             : 'products';

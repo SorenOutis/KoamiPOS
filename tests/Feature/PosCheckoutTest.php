@@ -17,10 +17,10 @@ test('cashier can checkout with discount code and stock decrements', function ()
 
     $this->actingAs($cashier);
 
-    $response = $this->post(route('pos.orders.store'), [
-        'items' => [['product_id' => $product->id, 'quantity' => 2]],
+    $response = $this->post(route('pos.orders.store'), ['items' => [['product_id' => $product->id, 'quantity' => 2]],
         'payment_method' => 'cash',
         'discount_code' => 'SENIOR10',
+        'status' => 'completed',
     ]);
 
     $order = Order::forWorkspace($workspace)->latest()->first();
@@ -53,12 +53,14 @@ test('checkout rejects other workspace product and discount', function () {
     $this->post(route('pos.orders.store'), [
         'items' => [['product_id' => $productB->id, 'quantity' => 1]],
         'payment_method' => 'cash',
+        'status' => 'completed',
     ])->assertInvalid('items');
 
     $this->post(route('pos.orders.store'), [
         'items' => [['product_id' => Product::forWorkspace($workspaceA)->first()->id, 'quantity' => 1]],
         'payment_method' => 'cash',
         'discount_code' => 'SAVE50',
+        'status' => 'completed',
     ])->assertInvalid('discount_code');
 });
 
@@ -75,6 +77,7 @@ test('checkout rejects insufficient stock', function () {
     $this->post(route('pos.orders.store'), [
         'items' => [['product_id' => $product->id, 'quantity' => 5]],
         'payment_method' => 'cash',
+        'status' => 'completed',
     ])->assertInvalid('items');
 });
 
@@ -88,6 +91,7 @@ test('admin cannot checkout via POS', function () {
     $this->post(route('pos.orders.store'), [
         'items' => [['product_id' => Product::forWorkspace($workspace)->first()->id, 'quantity' => 1]],
         'payment_method' => 'cash',
+        'status' => 'completed',
     ])->assertForbidden();
 });
 

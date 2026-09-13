@@ -13,6 +13,7 @@ class SalesReportService
 {
     /**
      * @param  array{workspace_id?: int|null, date_from?: CarbonInterface|string|null, date_to?: CarbonInterface|string|null, cashier_id?: int|null, payment_method?: string|null, status?: string|string[]|null}  $filters
+     * @return Builder<Order>
      */
     public function baseQuery(array $filters = []): Builder
     {
@@ -58,6 +59,7 @@ class SalesReportService
             ->selectRaw('COALESCE(SUM(orders.discount), 0) as discount')
             ->selectRaw('COALESCE(SUM(orders.tax), 0) as tax')
             ->selectRaw('COALESCE(SUM(orders.total), 0) as total')
+            ->toBase()
             ->first();
 
         $ordersCount = (int) ($row->orders_count ?? 0);
@@ -88,15 +90,18 @@ class SalesReportService
             ->selectRaw('COALESCE(SUM(orders.total), 0) as total')
             ->groupBy(DB::raw('DATE(orders.created_at)'))
             ->orderBy('date')
+            ->toBase()
             ->get()
-            ->map(fn ($row): array => [
-                'date' => (string) $row->date,
-                'orders_count' => (int) $row->orders_count,
-                'subtotal' => (float) $row->subtotal,
-                'discount' => (float) $row->discount,
-                'tax' => (float) $row->tax,
-                'total' => (float) $row->total,
-            ]);
+            ->map(
+                /** @return array{date: string, orders_count: int, subtotal: float, discount: float, tax: float, total: float} */
+                fn ($row) => [
+                    'date' => (string) $row->date,
+                    'orders_count' => (int) $row->orders_count,
+                    'subtotal' => (float) $row->subtotal,
+                    'discount' => (float) $row->discount,
+                    'tax' => (float) $row->tax,
+                    'total' => (float) $row->total,
+                ]);
     }
 
     /**
@@ -113,20 +118,23 @@ class SalesReportService
             ->selectRaw('COALESCE(SUM(orders.total), 0) as total')
             ->groupBy('orders.cashier_id', 'cashiers.name')
             ->orderByDesc('total')
+            ->toBase()
             ->get()
-            ->map(fn ($row): array => [
-                'cashier_id' => (int) $row->cashier_id,
-                'cashier_name' => (string) $row->cashier_name,
-                'orders_count' => (int) $row->orders_count,
-                'total' => (float) $row->total,
-            ]);
+            ->map(
+                /** @return array{cashier_id: int, cashier_name: string, orders_count: int, total: float} */
+                fn ($row) => [
+                    'cashier_id' => (int) $row->cashier_id,
+                    'cashier_name' => (string) $row->cashier_name,
+                    'orders_count' => (int) $row->orders_count,
+                    'total' => (float) $row->total,
+                ]);
     }
 
     /**
      * @param  array{workspace_id?: int|null, date_from?: CarbonInterface|string|null, date_to?: CarbonInterface|string|null, cashier_id?: int|null, payment_method?: string|null, status?: string|string[]|null}  $filters
-     * @return Collection<int, array{product_id: int|null, product_name: string, quantity: int, revenue: float}>
+     * @return array<int, array{product_id: int|null, product_name: string, quantity: int, revenue: float}>
      */
-    public function byProduct(array $filters = [], int $limit = 20): Collection
+    public function byProduct(array $filters = [], int $limit = 20): array
     {
         $orderIds = $this->baseQuery($filters)->select('orders.id');
 
@@ -140,12 +148,13 @@ class SalesReportService
             ->orderByDesc('revenue')
             ->limit($limit)
             ->get()
-            ->map(fn ($row): array => [
+            ->map(fn ($row) => [
                 'product_id' => $row->product_id !== null ? (int) $row->product_id : null,
                 'product_name' => (string) $row->product_name,
                 'quantity' => (int) $row->quantity,
                 'revenue' => (float) $row->revenue,
-            ]);
+            ])
+            ->all();
     }
 
     /**
@@ -160,12 +169,15 @@ class SalesReportService
             ->selectRaw('COALESCE(SUM(orders.total), 0) as total')
             ->groupBy('orders.payment_method')
             ->orderBy('payment_method')
+            ->toBase()
             ->get()
-            ->map(fn ($row): array => [
-                'payment_method' => (string) $row->payment_method,
-                'orders_count' => (int) $row->orders_count,
-                'total' => (float) $row->total,
-            ]);
+            ->map(
+                /** @return array{payment_method: string, orders_count: int, total: float} */
+                fn ($row) => [
+                    'payment_method' => (string) $row->payment_method,
+                    'orders_count' => (int) $row->orders_count,
+                    'total' => (float) $row->total,
+                ]);
     }
 
     /**

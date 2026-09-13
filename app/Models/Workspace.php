@@ -46,31 +46,60 @@ class Workspace extends Model
         ];
     }
 
+    /**
+     * @return HasMany<User, $this>
+     */
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
     }
 
+    /**
+     * @return HasMany<User, $this>
+     */
     public function admins(): HasMany
     {
         return $this->hasMany(User::class)->where('role', 'admin');
     }
 
+    /**
+     * @return HasMany<User, $this>
+     */
     public function cashiers(): HasMany
     {
         return $this->hasMany(User::class)->where('role', 'cashier');
     }
 
+    /**
+     * @return HasMany<Category, $this>
+     */
+    /**
+     * @return HasMany<Category, $this>
+     */
     public function categories(): HasMany
     {
         return $this->hasMany(Category::class);
     }
 
+    /**
+     * @return HasMany<Discount, $this>
+     */
+    public function discounts(): HasMany
+    {
+        return $this->hasMany(Discount::class);
+    }
+
+    /**
+     * @return HasMany<Product, $this>
+     */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }
 
+    /**
+     * @return HasMany<Order, $this>
+     */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
@@ -81,13 +110,11 @@ class Workspace extends Model
      */
     protected function logoUrl(): Attribute
     {
-        return Attribute::get(function (): ?string {
-            if (! $this->logo_path) {
-                return null;
-            }
-
-            return Storage::disk('public')->url($this->logo_path);
-        });
+        return Attribute::make(
+            get: fn (): ?string => ! $this->logo_path
+                ? null
+                : Storage::disk('public')->url($this->logo_path),
+        );
     }
 
     protected static function booted(): void
@@ -101,6 +128,10 @@ class Workspace extends Model
         });
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {

@@ -48,16 +48,17 @@ export default function LetterFallbackImage({
         return () => ro.disconnect();
     }, [size, showFallback]);
 
-    const initials = alt
-        .split(/[\s_-]+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((segment) => segment.at(0)?.toUpperCase() ?? '')
-        .join('') || '?';
+    const initials =
+        alt
+            .split(/[\s_-]+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((segment) => segment.at(0)?.toUpperCase() ?? '')
+            .join('') || '?';
 
     const letterFallback = (
         <div
-            className={`flex items-center justify-center rounded-full bg-muted text-muted-foreground font-semibold text-[10px] leading-none ${fallbackClassName}`}
+            className={`bg-muted text-muted-foreground flex items-center justify-center rounded-full text-[10px] leading-none font-semibold ${fallbackClassName}`}
             style={{
                 width: imgSize,
                 height: imgSize,

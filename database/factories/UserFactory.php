@@ -75,7 +75,7 @@ class UserFactory extends Factory
         return $this->state(function (array $attributes) use ($workspace) {
             return [
                 'role' => UserRole::Admin,
-                'workspace_id' => $workspace?->id ?? Workspace::factory(),
+                'workspace_id' => $workspace->id ?? Workspace::factory(),
             ];
         });
     }
@@ -85,7 +85,7 @@ class UserFactory extends Factory
         return $this->state(function (array $attributes) use ($workspace) {
             return [
                 'role' => UserRole::Cashier,
-                'workspace_id' => $workspace?->id ?? Workspace::factory(),
+                'workspace_id' => $workspace->id ?? Workspace::factory(),
             ];
         });
     }

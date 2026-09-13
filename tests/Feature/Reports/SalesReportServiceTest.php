@@ -117,7 +117,9 @@ test('breakdowns by cashier product and payment respect filters', function () {
     expect($byPayment->pluck('payment_method')->sort()->values()->all())->toBe(['card', 'cash']);
 
     $byProduct = $service->byProduct($filters);
-    expect($byProduct->pluck('product_name')->sort()->values()->all())->toContain('Burger', 'Fries');
+    $productNames = array_column($byProduct, 'product_name');
+    sort($productNames);
+    expect($productNames)->toContain('Burger', 'Fries');
 
     $filtered = $service->totals([...$filters, 'cashier_id' => $cashierA->id]);
     expect($filtered['orders_count'])->toBe(1)

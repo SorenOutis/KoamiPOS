@@ -19,7 +19,7 @@ class ProductSalesTable extends TableWidget
         return $table
             ->heading('Top products')
             ->records(function (?string $sortColumn, ?string $sortDirection, ?string $search, int $page, int $recordsPerPage): LengthAwarePaginator {
-                $rows = app(SalesReportService::class)->byProduct($this->reportFilters())->all();
+                $rows = app(SalesReportService::class)->byProduct($this->reportFilters());
 
                 if (filled($search)) {
                     $rows = array_values(array_filter(

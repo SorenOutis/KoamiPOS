@@ -44,7 +44,9 @@ export default function PosSalesIndex({ workspace, orders }: Props) {
             <Head title="Sales History" />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold">Sales — {workspace?.name}</h1>
+                    <h1 className="text-2xl font-semibold">
+                        Sales — {workspace?.name}
+                    </h1>
                     <Link href="/pos" className="text-sm underline">
                         Back to POS
                     </Link>
@@ -55,18 +57,23 @@ export default function PosSalesIndex({ workspace, orders }: Props) {
                     </CardHeader>
                     <CardContent className="flex flex-col gap-2">
                         {orders.data.length === 0 && (
-                            <p className="text-muted-foreground text-sm">No sales yet.</p>
+                            <p className="text-muted-foreground text-sm">
+                                No sales yet.
+                            </p>
                         )}
                         {orders.data.map((order) => (
                             <Link
                                 key={order.id}
                                 href={`/pos/sales/${order.id}`}
-                                className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted"
+                                className="hover:bg-muted flex items-center justify-between rounded-lg border p-3"
                             >
                                 <div>
-                                    <p className="text-sm font-medium">Sale #{order.id}</p>
+                                    <p className="text-sm font-medium">
+                                        Sale #{order.id}
+                                    </p>
                                     <p className="text-muted-foreground text-xs">
-                                        {order.cashier?.name} · {order.payment_method} ·{' '}
+                                        {order.cashier?.name} ·{' '}
+                                        {order.payment_method} ·{' '}
                                         {order.items_count ?? ''} items
                                     </p>
                                 </div>
@@ -102,7 +109,9 @@ export default function PosSalesIndex({ workspace, orders }: Props) {
                                         <Link
                                             key={`${link.label}-${index}`}
                                             href={link.url}
-                                            aria-current={link.active ? 'page' : undefined}
+                                            aria-current={
+                                                link.active ? 'page' : undefined
+                                            }
                                             className={cn(
                                                 'inline-flex h-9 min-w-9 items-center justify-center rounded-md border px-2 text-sm tabular-nums',
                                                 link.active

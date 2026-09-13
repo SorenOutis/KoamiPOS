@@ -42,4 +42,12 @@ class ProductFactory extends Factory
             'category_id' => $category?->id,
         ]);
     }
+
+    public function forCategory(Category $category): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'workspace_id' => $category->workspace_id,
+            'category_id' => $category->id,
+        ]);
+    }
 }

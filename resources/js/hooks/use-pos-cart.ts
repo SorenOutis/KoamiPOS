@@ -83,28 +83,43 @@ export default function usePosCart(products: CartItem[]) {
         }
     }, [cart]);
 
-    const addToCart = useCallback(
-        (product: CartItem) => {
-            setCart((prev) => {
-                const next = (prev[product.id] ?? 0) + 1;
-                if (next > product.stock_quantity) {
-                    return prev;
-                }
-                return { ...prev, [product.id]: next };
-            });
-        },
-        [],
-    );
-
-    const setQuantity = useCallback((productId: number, quantity: number) => {
+    const addToCart = useCallback((product: CartItem) => {
         setCart((prev) => {
-            if (quantity <= 0) {
-                const { [productId]: _removed, ...rest } = prev;
-                return rest;
+            const next = (prev[product.id] ?? 0) + 1;
+            if (next > product.stock_quantity) {
+                return prev;
             }
-            return { ...prev, [productId]: quantity };
+            return { ...prev, [product.id]: next };
         });
     }, []);
+
+    const setQuantity = useCallback(
+        (productId: number, quantity: number) => {
+            const max = products.find(
+                (p) => p.id === productId,
+            )?.stock_quantity;
+            setCart((prev) => {
+                if (quantity <= 0) {
+                    const { [productId]: _removed, ...rest } = prev;
+                    return rest;
+                }
+                const wanted = Math.floor(quantity);
+                const clamped =
+                    max === undefined
+                        ? wanted
+                        : Math.min(wanted, Math.max(max, 0));
+                if (clamped <= 0) {
+                    const { [productId]: _removed, ...rest } = prev;
+                    return rest;
+                }
+                if (prev[productId] === clamped) {
+                    return prev;
+                }
+                return { ...prev, [productId]: clamped };
+            });
+        },
+        [products],
+    );
 
     const clearCart = useCallback(() => {
         setCart({});

@@ -20,6 +20,7 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         $name = fake()->unique()->words(2, true);
+        $name = is_array($name) ? implode(' ', $name) : $name;
 
         return [
             'workspace_id' => Workspace::factory(),
@@ -29,5 +30,12 @@ class CategoryFactory extends Factory
             'image_path' => null,
             'is_active' => true,
         ];
+    }
+
+    public function forWorkspace(Workspace $workspace): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'workspace_id' => $workspace->id,
+        ]);
     }
 }

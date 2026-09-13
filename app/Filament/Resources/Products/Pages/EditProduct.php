@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Products\Pages;
 
 use App\Filament\Resources\Products\ProductResource;
 use App\Models\Category;
+use App\Models\Product;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Validation\ValidationException;
@@ -30,7 +31,13 @@ class EditProduct extends EditRecord
         if ($authUser && $authUser->isAdmin()) {
             unset($data['workspace_id']);
 
-            $workspaceId = $this->record->workspace_id;
+            $record = $this->record;
+
+            if (! $record instanceof Product) {
+                return $data;
+            }
+
+            $workspaceId = $record->workspace_id;
 
             if (! empty($data['category_id'])) {
                 $valid = Category::where('id', $data['category_id'])

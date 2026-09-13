@@ -77,6 +77,10 @@ class Discount extends Model
         return round(min((float) $this->value, $subtotal), 2);
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {

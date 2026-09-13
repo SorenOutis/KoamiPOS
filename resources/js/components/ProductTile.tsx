@@ -17,25 +17,45 @@ type Props = {
     product: PosProduct;
     quantityInCart: number;
     onAdd: (product: PosProduct) => void;
+    onAddAnother?: (product: PosProduct) => void;
     lowStockThreshold?: number;
+    maxCartQuantity?: number;
 };
 
 export default function ProductTile({
     product,
     quantityInCart,
     onAdd,
+    onAddAnother,
     lowStockThreshold = 5,
+    maxCartQuantity,
 }: Props) {
-    const remaining = Math.max(product.stock_quantity - quantityInCart, 0);
+    const restockLabel =
+        typeof product.stock_quantity === 'number' && product.stock_quantity < 0
+            ? `Restock in ${Math.abs(product.stock_quantity)}`
+            : null;
+    const totalInCart = quantityInCart;
+    const usableStock =
+        maxCartQuantity !== undefined
+            ? Math.min(product.stock_quantity, maxCartQuantity)
+            : product.stock_quantity;
+    const remaining = Math.max(usableStock - totalInCart, 0);
     const soldOut = product.stock_quantity <= 0;
-    const disabled = remaining <= 0;
+    const softLimit = usableStock <= 0 && !soldOut;
     const lowStock = !soldOut && product.stock_quantity <= lowStockThreshold;
+    const disabled = remaining <= 0;
 
     return (
         <button
             type="button"
-            onClick={() => onAdd(product)}
-            disabled={disabled}
+            onClick={() => {
+                if (onAddAnother) {
+                    onAddAnother(product);
+                    return;
+                }
+                onAdd(product);
+            }}
+            disabled={soldOut || disabled}
             aria-label={`Add ${product.name} to cart`}
             title={
                 !soldOut && disabled
@@ -43,16 +63,19 @@ export default function ProductTile({
                     : undefined
             }
             className={cn(
-                'relative flex min-h-[152px] w-full flex-col items-center gap-2 rounded-xl border bg-card p-3 text-center transition select-none',
+                'bg-card relative flex min-h-[152px] w-full flex-col items-center gap-2 rounded-xl border p-3 text-center transition select-none',
                 'hover:border-ring hover:bg-accent/40 active:scale-[0.97]',
                 'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] focus-visible:outline-none',
-                disabled &&
-                    'cursor-not-allowed opacity-40 hover:border-border hover:bg-card',
+                soldOut &&
+                    'border-border/60 bg-muted/30 hover:bg-muted cursor-default opacity-85',
+                !soldOut &&
+                    (disabled || softLimit) &&
+                    'hover:border-border hover:bg-card cursor-not-allowed opacity-70',
             )}
         >
-            {quantityInCart > 0 && (
+            {totalInCart > 0 && (
                 <span className="bg-primary text-primary-foreground absolute top-2 right-2 flex size-6 items-center justify-center rounded-full text-xs font-semibold tabular-nums">
-                    {quantityInCart}
+                    {totalInCart}
                 </span>
             )}
 
@@ -67,6 +90,10 @@ export default function ProductTile({
             <div className="w-full min-w-0">
                 <p className="line-clamp-2 text-sm leading-tight font-medium">
                     {product.name}
+                    {soldOut &&
+                        `
+                        (unavailable today)
+                    `}
                 </p>
                 <p className="text-muted-foreground truncate text-[11px]">
                     {product.sku}
@@ -78,8 +105,12 @@ export default function ProductTile({
                     ₱{Number(product.price).toFixed(2)}
                 </span>
                 {soldOut ? (
-                    <Badge variant="destructive" className="text-[10px]">
-                        Out
+                    <Badge variant="outline" className="text-[10px]">
+                        {restockLabel ?? 'Sold out'}
+                    </Badge>
+                ) : disabled ? (
+                    <Badge variant="outline" className="text-[10px]">
+                        Limit reached
                     </Badge>
                 ) : lowStock ? (
                     <Badge variant="secondary" className="text-[10px]">

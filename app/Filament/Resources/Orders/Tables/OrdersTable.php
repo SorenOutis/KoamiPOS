@@ -73,6 +73,7 @@ class OrdersTable
                         'cash' => 'Cash',
                         'card' => 'Card',
                         'ewallet' => 'E-Wallet',
+                        'split' => 'Split payment',
                     ]),
                 SelectFilter::make('status')
                     ->options([

@@ -48,6 +48,7 @@ class CategoryForm
                     ->disk('public')
                     ->directory(function (callable $get) {
                         $workspaceId = $get('workspace_id');
+
                         return $workspaceId
                             ? "categories/{$workspaceId}"
                             : 'categories';

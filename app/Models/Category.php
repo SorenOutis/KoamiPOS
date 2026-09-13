@@ -36,6 +36,9 @@ class Category extends Model
         ];
     }
 
+    /**
+     * @return HasMany<Product, $this>
+     */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
@@ -46,13 +49,11 @@ class Category extends Model
      */
     protected function imageUrl(): Attribute
     {
-        return Attribute::get(function (): ?string {
-            if (! $this->image_path) {
-                return null;
-            }
-
-            return Storage::disk('public')->url($this->image_path);
-        });
+        return Attribute::make(
+            get: fn (): ?string => ! $this->image_path
+                ? null
+                : Storage::disk('public')->url($this->image_path),
+        );
     }
 
     protected static function booted(): void
@@ -72,6 +73,10 @@ class Category extends Model
         });
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {
