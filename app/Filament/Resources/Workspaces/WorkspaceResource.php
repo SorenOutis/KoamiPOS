@@ -5,6 +5,11 @@ namespace App\Filament\Resources\Workspaces;
 use App\Filament\Resources\Workspaces\Pages\CreateWorkspace;
 use App\Filament\Resources\Workspaces\Pages\EditWorkspace;
 use App\Filament\Resources\Workspaces\Pages\ListWorkspaces;
+use App\Filament\Resources\Workspaces\RelationManagers\CategoriesRelationManager;
+use App\Filament\Resources\Workspaces\RelationManagers\DiscountsRelationManager;
+use App\Filament\Resources\Workspaces\RelationManagers\OrdersRelationManager;
+use App\Filament\Resources\Workspaces\RelationManagers\ProductsRelationManager;
+use App\Filament\Resources\Workspaces\RelationManagers\UsersRelationManager;
 use App\Filament\Resources\Workspaces\Schemas\WorkspaceForm;
 use App\Filament\Resources\Workspaces\Tables\WorkspacesTable;
 use App\Models\Workspace;
@@ -48,7 +53,11 @@ class WorkspaceResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ProductsRelationManager::class,
+            CategoriesRelationManager::class,
+            DiscountsRelationManager::class,
+            OrdersRelationManager::class,
+            UsersRelationManager::class,
         ];
     }
 
