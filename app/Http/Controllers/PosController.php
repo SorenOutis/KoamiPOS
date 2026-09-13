@@ -28,7 +28,7 @@ class PosController extends Controller
                     'category_id' => $product->category_id,
                     'name' => $product->name,
                     'sku' => $product->sku,
-                    'price' => $product->price,
+                    'price' => (float) $product->price,
                     'stock_quantity' => $product->stock_quantity,
                     'image_url' => $product->image_url,
                     'category' => $product->category ? [

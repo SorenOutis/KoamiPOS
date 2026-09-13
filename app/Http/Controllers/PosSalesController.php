@@ -35,7 +35,7 @@ class PosSalesController extends Controller
 
         abort_unless($order->workspace_id === $user->workspace_id, 403);
 
-        $order->loadMissing(['items.product:id,name,sku', 'cashier:id,name,email', 'workspace:id,name,slug']);
+        $order->loadMissing(['items.product:id,name,sku', 'payments', 'cashier:id,name,email', 'workspace:id,name,slug']);
 
         return Inertia::render('pos/sales/show', [
             'order' => $order,

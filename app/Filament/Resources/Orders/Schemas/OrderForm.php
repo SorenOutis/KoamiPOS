@@ -24,7 +24,7 @@ class OrderForm
                     ->relationship(
                         'cashier',
                         'name',
-                        modifyQueryUsing: fn ($query) => $isAdmin && $authUser?->workspace_id
+                        modifyQueryUsing: fn ($query) => $isAdmin && $authUser->workspace_id
                             ? $query->where('workspace_id', $authUser->workspace_id)
                             : $query
                     )
@@ -51,6 +51,7 @@ class OrderForm
                         'cash' => 'Cash',
                         'card' => 'Card',
                         'ewallet' => 'E-Wallet',
+                        'split' => 'Split payment',
                     ])
                     ->required()
                     ->default('cash'),
