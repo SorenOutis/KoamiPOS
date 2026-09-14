@@ -5,6 +5,16 @@ export type Workspace = {
     phone?: string | null;
     address?: string | null;
     logo_url?: string | null;
+    business_type?: string | null;
+    currency?: string | null;
+    currency_symbol?: string | null;
+    tax_rate?: number | string | null;
+    tax_inclusive?: boolean;
+    service_charge_rate?: number | string | null;
+    receipt_header?: string | null;
+    receipt_footer?: string | null;
+    receipt_printer_type?: string | null;
+    settings?: Record<string, boolean> | null;
 };
 
 export type User = {

@@ -11,6 +11,22 @@ export type PosProduct = {
     category_id: number | null;
     image_url?: string | null;
     category?: { id: number; name: string } | null;
+    modifiers?: PosModifier[];
+};
+
+export type PosModifierOption = {
+    id: number;
+    name: string;
+    price_delta: number;
+};
+
+export type PosModifier = {
+    id: number;
+    name: string;
+    is_required: boolean;
+    min_selections: number;
+    max_selections: number;
+    options: PosModifierOption[];
 };
 
 type Props = {
@@ -20,6 +36,7 @@ type Props = {
     onAddAnother?: (product: PosProduct) => void;
     lowStockThreshold?: number;
     maxCartQuantity?: number;
+    currencySymbol?: string;
 };
 
 export default function ProductTile({
@@ -29,6 +46,7 @@ export default function ProductTile({
     onAddAnother,
     lowStockThreshold = 5,
     maxCartQuantity,
+    currencySymbol = '₱',
 }: Props) {
     const restockLabel =
         typeof product.stock_quantity === 'number' && product.stock_quantity < 0
@@ -102,7 +120,8 @@ export default function ProductTile({
 
             <div className="mt-auto flex w-full items-center justify-between gap-2">
                 <span className="text-sm font-semibold tabular-nums">
-                    ₱{Number(product.price).toFixed(2)}
+                    {currencySymbol}
+                    {Number(product.price).toFixed(2)}
                 </span>
                 {soldOut ? (
                     <Badge variant="outline" className="text-[10px]">

@@ -5,11 +5,16 @@ namespace App\Http\Controllers;
 use App\Enums\OrderStatus;
 use App\Http\Requests\Pos\CompleteOrderRequest;
 use App\Http\Requests\Pos\StoreOrderRequest;
+use App\Models\DiningTable;
 use App\Models\Discount;
+use App\Models\Modifier;
+use App\Models\ModifierOption;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderItemModifier;
 use App\Models\OrderPayment;
 use App\Models\Product;
+use App\Services\Tax\TaxCalculator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +24,8 @@ use Inertia\Response;
 
 class PosCheckoutController extends Controller
 {
+    public function __construct(private TaxCalculator $taxCalculator) {}
+
     public function __invoke(StoreOrderRequest $request): RedirectResponse|Response
     {
         $user = $request->user();
@@ -40,6 +47,7 @@ class PosCheckoutController extends Controller
         $products = Product::whereIn('id', $productIds)
             ->forWorkspace($workspaceId)
             ->active()
+            ->with(['modifiers.options'])
             ->lockForUpdate()
             ->get()
             ->keyBy('id');
@@ -53,7 +61,7 @@ class PosCheckoutController extends Controller
         $lines = [];
         $subtotal = 0.0;
 
-        foreach ($validated['items'] as $item) {
+        foreach ($validated['items'] as $itemIndex => $item) {
             $product = $products->get($item['product_id']);
 
             if (! $product || $product->stock_quantity < $item['quantity']) {
@@ -62,14 +70,23 @@ class PosCheckoutController extends Controller
                 ]);
             }
 
-            $lineTotal = round((float) $product->price * $item['quantity'], 2);
+            $modifiers = $this->resolveModifierSelections(
+                $product,
+                $item['modifiers'] ?? [],
+                $itemIndex,
+            );
+            $modifierTotal = collect($modifiers)->sum('price');
+            $unitPrice = round((float) $product->price + $modifierTotal, 2);
+            $lineTotal = round($unitPrice * $item['quantity'], 2);
             $subtotal += $lineTotal;
 
             $lines[] = [
                 'product' => $product,
                 'quantity' => $item['quantity'],
-                'unit_price' => (float) $product->price,
+                'unit_price' => $unitPrice,
                 'total' => $lineTotal,
+                'modifiers' => $modifiers,
+                'prep_notes' => $item['prep_notes'] ?? null,
             ];
         }
 
@@ -91,22 +108,56 @@ class PosCheckoutController extends Controller
             $discountAmount = $discount->amountFor($subtotal);
         }
 
-        $taxable = round($subtotal - $discountAmount, 2);
-        $tax = round($taxable * 0.12, 2);
-        $total = round($taxable + $tax, 2);
+        $user->loadMissing('workspace');
+        $workspace = $user->workspace;
+        abort_unless($workspace !== null, 403);
+
+        $orderType = $validated['order_type'] ?? 'takeaway';
+        $table = null;
+
+        if ($orderType === 'dine_in' && array_key_exists('table_id', $validated) && $validated['table_id'] !== null) {
+            $table = DiningTable::forWorkspace($workspaceId)
+                ->whereKey($validated['table_id'])
+                ->lockForUpdate()
+                ->first();
+
+            if (! $table || ! $table->isAvailable() || $table->current_order_id !== null) {
+                throw ValidationException::withMessages([
+                    'table_id' => 'The selected table is not available.',
+                ]);
+            }
+        } elseif (array_key_exists('table_id', $validated) && $validated['table_id'] !== null) {
+            throw ValidationException::withMessages([
+                'table_id' => 'A table can only be assigned to a dine-in order.',
+            ]);
+        }
+
+        $taxCalc = $this->taxCalculator->calculate(
+            $workspace,
+            $subtotal,
+            $discountAmount,
+            $workspace->hasFeature('service_charge'),
+        );
+
+        $tax = $taxCalc['tax_amount'];
+        $total = $taxCalc['total'];
 
         $status = $validated['status'];
 
         $order = DB::transaction(function () use (
             $user,
+            $workspace,
             $workspaceId,
             $validated,
             $lines,
             $subtotal,
             $discountAmount,
             $tax,
+            $taxCalc,
             $total,
             $status,
+            $orderType,
+            $table,
         ): Order {
             $order = Order::create([
                 'workspace_id' => $workspaceId,
@@ -114,21 +165,46 @@ class PosCheckoutController extends Controller
                 'subtotal' => $subtotal,
                 'discount' => $discountAmount,
                 'tax' => $tax,
+                'service_charge' => $taxCalc['service_charge_amount'],
                 'total' => $total,
                 'payment_method' => $validated['payment_method'],
                 'status' => $status,
+                'order_type' => $orderType,
+                'table_id' => $table?->id,
+                'guest_count' => $validated['guest_count'] ?? 1,
+                'kds_status' => $workspace->hasFeature('has_kds') ? 'preparing' : 'pending',
+                'kitchen_notes' => $validated['kitchen_notes'] ?? null,
             ]);
 
             foreach ($lines as $line) {
-                $order->items()->create([
+                $orderItem = $order->items()->create([
                     'product_id' => $line['product']->id,
                     'product_name' => $line['product']->name,
                     'unit_price' => $line['unit_price'],
                     'quantity' => $line['quantity'],
                     'total' => $line['total'],
+                    'kds_status' => $workspace->hasFeature('has_kds') ? 'preparing' : 'pending',
+                    'prep_notes' => $line['prep_notes'],
                 ]);
 
+                foreach ($line['modifiers'] as $modifier) {
+                    $orderItem->itemModifiers()->create([
+                        'modifier_option_id' => $modifier['modifier_option_id'],
+                        'name' => $modifier['name'],
+                        'price' => $modifier['price'],
+                    ]);
+                }
+
                 $line['product']->decrement('stock_quantity', $line['quantity']);
+            }
+
+            if ($table) {
+                $table->update([
+                    'status' => $status === OrderStatus::Completed->value
+                        ? DiningTable::STATUS_FREE
+                        : DiningTable::STATUS_OCCUPIED,
+                    'current_order_id' => $status === OrderStatus::Completed->value ? null : $order->id,
+                ]);
             }
 
             if ($status === OrderStatus::Completed->value) {
@@ -138,16 +214,32 @@ class PosCheckoutController extends Controller
             return $order;
         });
 
-        $loadedOrder = $order->loadMissing(['items.product:id,name,sku', 'payments', 'cashier:id,name,email', 'workspace:id,name,slug']);
+        $loadedOrder = $order->loadMissing([
+            'items.product:id,name,sku',
+            'items.itemModifiers',
+            'payments',
+            'cashier:id,name,email',
+            'workspace:id,name,slug',
+            'table:id,name',
+        ]);
 
         $orderArray = [
             'id' => $loadedOrder->id,
             'subtotal' => $loadedOrder->subtotal,
             'discount' => $loadedOrder->discount,
             'tax' => $loadedOrder->tax,
+            'service_charge' => $loadedOrder->service_charge,
             'total' => $loadedOrder->total,
             'payment_method' => $loadedOrder->payment_method,
             'status' => $loadedOrder->status,
+            'order_type' => $loadedOrder->order_type,
+            'guest_count' => $loadedOrder->guest_count,
+            'kds_status' => $loadedOrder->kds_status,
+            'kitchen_notes' => $loadedOrder->kitchen_notes,
+            'table' => $loadedOrder->table ? [
+                'id' => $loadedOrder->table->id,
+                'name' => $loadedOrder->table->name,
+            ] : null,
             'completed_at' => $loadedOrder->completed_at?->toIso8601String(),
             'voided_at' => $loadedOrder->voided_at?->toIso8601String(),
             'tendered_amount' => $loadedOrder->tendered_amount,
@@ -159,6 +251,12 @@ class PosCheckoutController extends Controller
                     'unit_price' => $item->unit_price,
                     'quantity' => $item->quantity,
                     'total' => $item->total,
+                    'prep_notes' => $item->prep_notes,
+                    'modifiers' => $item->itemModifiers->map(fn (OrderItemModifier $modifier) => [
+                        'id' => $modifier->id,
+                        'name' => $modifier->name,
+                        'price' => $modifier->price,
+                    ])->all(),
                 ];
             })->all(),
             'payments' => $loadedOrder->payments->map(fn (OrderPayment $payment) => [
@@ -173,10 +271,13 @@ class PosCheckoutController extends Controller
                 'name' => $loadedOrder->cashier->name,
                 'email' => $loadedOrder->cashier->email,
             ] : null,
-            'workspace' => $user->workspace ? [
+            'workspace' => [
                 'id' => $user->workspace->id,
                 'name' => $user->workspace->name,
-            ] : null,
+                'currency_symbol' => $user->workspace->currency_symbol,
+                'tax_rate' => (float) $user->workspace->tax_rate,
+                'tax_inclusive' => (bool) $user->workspace->tax_inclusive,
+            ],
         ];
 
         if ($loadedOrder->status === OrderStatus::Completed->value) {
@@ -185,10 +286,13 @@ class PosCheckoutController extends Controller
 
         return Inertia::render('pos/sales/show', [
             'order' => $orderArray,
-            'workspace' => $user->workspace ? [
+            'workspace' => [
                 'id' => $user->workspace->id,
                 'name' => $user->workspace->name,
-            ] : null,
+                'currency_symbol' => $user->workspace->currency_symbol,
+                'tax_rate' => (float) $user->workspace->tax_rate,
+                'tax_inclusive' => (bool) $user->workspace->tax_inclusive,
+            ],
         ])->with('success', 'Order staged.');
     }
 
@@ -236,6 +340,14 @@ class PosCheckoutController extends Controller
 
             $order->complete();
 
+            DiningTable::query()
+                ->where('workspace_id', $order->workspace_id)
+                ->where('current_order_id', $order->id)
+                ->update([
+                    'status' => DiningTable::STATUS_FREE,
+                    'current_order_id' => null,
+                ]);
+
             return $order;
         });
 
@@ -279,9 +391,71 @@ class PosCheckoutController extends Controller
 
             $order->void();
 
+            DiningTable::query()
+                ->where('workspace_id', $order->workspace_id)
+                ->where('current_order_id', $order->id)
+                ->update([
+                    'status' => DiningTable::STATUS_FREE,
+                    'current_order_id' => null,
+                ]);
+
             return $order;
         });
 
         return redirect()->route('pos.sales.show', $order)->with('success', 'Order voided. Stock released.');
+    }
+
+    /**
+     * @param  array<int, array{modifier_option_id: int|string}>  $selections
+     * @return array<int, array{modifier_option_id: int, name: string, price: float}>
+     */
+    private function resolveModifierSelections(Product $product, array $selections, int|string $itemIndex): array
+    {
+        /** @var array<int, array{modifier: Modifier, option: ModifierOption}> $availableOptions */
+        $availableOptions = [];
+
+        foreach ($product->modifiers as $modifier) {
+            foreach ($modifier->options as $option) {
+                $availableOptions[$option->id] = [
+                    'modifier' => $modifier,
+                    'option' => $option,
+                ];
+            }
+        }
+
+        $selectedByModifier = [];
+        $resolved = [];
+
+        foreach ($selections as $selection) {
+            $optionId = (int) $selection['modifier_option_id'];
+            $available = $availableOptions[$optionId] ?? null;
+
+            if (! $available) {
+                throw ValidationException::withMessages([
+                    "items.{$itemIndex}.modifiers" => 'One or more modifier options are not available for this product.',
+                ]);
+            }
+
+            $modifierId = $available['modifier']->id;
+            $selectedByModifier[$modifierId] = ($selectedByModifier[$modifierId] ?? 0) + 1;
+            $resolved[] = [
+                'modifier_option_id' => $available['option']->id,
+                'name' => $available['option']->name,
+                'price' => (float) $available['option']->price_delta,
+            ];
+        }
+
+        foreach ($product->modifiers as $modifier) {
+            $selectedCount = $selectedByModifier[$modifier->id] ?? 0;
+            $minimum = max($modifier->min_selections, $modifier->is_required ? 1 : 0);
+
+            if ($selectedCount < $minimum || $selectedCount > $modifier->max_selections) {
+                throw ValidationException::withMessages([
+                    "items.{$itemIndex}.modifiers" => "Choose {$minimum} to {$modifier->max_selections} option(s) for {$modifier->name}.",
+                ]);
+            }
+        }
+
+        return $resolved;
     }
 }

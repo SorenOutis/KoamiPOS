@@ -21,13 +21,14 @@ test('cashier can visit POS terminal and sees joined workspace', function () {
     );
 });
 
-test('admin cannot visit cashier POS terminal', function () {
-    $workspace = Workspace::factory()->create();
+test('admin can visit POS terminal of own workspace', function () {
+    $this->withoutVite();
+    $workspace = Workspace::factory()->create(['name' => 'Acme Corp']);
     $admin = User::factory()->admin($workspace)->create();
 
     $this->actingAs($admin);
 
-    $this->get(route('pos.index'))->assertForbidden();
+    $this->get(route('pos.index'))->assertOk();
 });
 
 test('guests are redirected from POS terminal', function () {

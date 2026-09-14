@@ -15,6 +15,12 @@ use Illuminate\Support\Carbon;
 /**
  * @property Carbon|null $completed_at
  * @property Carbon|null $voided_at
+ * @property string $order_type
+ * @property int|null $table_id
+ * @property int $guest_count
+ * @property string $kds_status
+ * @property string|null $kitchen_notes
+ * @property float $service_charge
  */
 class Order extends Model
 {
@@ -27,12 +33,18 @@ class Order extends Model
         'subtotal',
         'discount',
         'tax',
+        'service_charge',
         'total',
         'payment_method',
         'status',
         'completed_at',
         'voided_at',
         'tendered_amount',
+        'order_type',
+        'table_id',
+        'guest_count',
+        'kds_status',
+        'kitchen_notes',
     ];
 
     protected function casts(): array
@@ -41,10 +53,12 @@ class Order extends Model
             'subtotal' => 'decimal:2',
             'discount' => 'decimal:2',
             'tax' => 'decimal:2',
+            'service_charge' => 'decimal:2',
             'total' => 'decimal:2',
             'completed_at' => 'datetime',
             'voided_at' => 'datetime',
             'tendered_amount' => 'decimal:2',
+            'guest_count' => 'integer',
         ];
     }
 
@@ -139,6 +153,28 @@ class Order extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(OrderPayment::class)->orderBy('id');
+    }
+
+    /**
+     * @return BelongsTo<DiningTable, $this>
+     */
+    public function table(): BelongsTo
+    {
+        return $this->belongsTo(DiningTable::class, 'table_id');
+    }
+
+    public function isDineIn(): bool
+    {
+        return $this->order_type === 'dine_in';
+    }
+
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeForKds(Builder $query): Builder
+    {
+        return $query->whereIn('kds_status', ['preparing', 'ready']);
     }
 
     public function itemsCount(): int

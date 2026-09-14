@@ -81,7 +81,7 @@ test('checkout rejects insufficient stock', function () {
     ])->assertInvalid('items');
 });
 
-test('admin cannot checkout via POS', function () {
+test('admin can checkout via POS in their workspace', function () {
     $workspace = Workspace::factory()->create();
     WorkspaceCatalogSeeder::seedWorkspace($workspace);
     $admin = User::factory()->admin($workspace)->create();
@@ -92,7 +92,8 @@ test('admin cannot checkout via POS', function () {
         'items' => [['product_id' => Product::forWorkspace($workspace)->first()->id, 'quantity' => 1]],
         'payment_method' => 'cash',
         'status' => 'completed',
-    ])->assertForbidden();
+        'tendered_amount' => 1000,
+    ])->assertRedirect();
 });
 
 test('cashier sees only own workspace sales history', function () {

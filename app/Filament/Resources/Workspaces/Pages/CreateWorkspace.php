@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\Workspaces\Pages;
 
+use App\Enums\BusinessType;
 use App\Enums\UserRole;
 use App\Filament\Resources\Workspaces\WorkspaceResource;
 use App\Models\User;
 use App\Models\Workspace;
+use App\Services\Presets\PresetManager;
 use Database\Seeders\WorkspaceCatalogSeeder;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -48,8 +50,11 @@ class CreateWorkspace extends CreateRecord
 
         unset($data['admin_name'], $data['admin_email'], $data['admin_password']);
 
-        /** @var Workspace $workspace */
-        $workspace = static::getModel()::create($data);
+        $businessType = BusinessType::tryFrom((string) ($data['business_type'] ?? 'restaurant')) ?? BusinessType::Restaurant;
+        $data['business_type'] = $businessType;
+        $workspace = new Workspace($data);
+        $workspace->save();
+        app(PresetManager::class)->applyPreset($workspace, $businessType, save: true);
 
         User::create([
             'name' => $adminName,

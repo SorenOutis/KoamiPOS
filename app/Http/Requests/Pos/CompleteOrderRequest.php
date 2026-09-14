@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Models\Order;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class CompleteOrderRequest extends FormRequest
@@ -14,7 +15,7 @@ class CompleteOrderRequest extends FormRequest
     {
         $user = $this->user();
 
-        return $user && $user->isCashier() && $user->workspace_id !== null;
+        return $user && $user->canAccessPos();
     }
 
     /**
@@ -34,6 +35,14 @@ class CompleteOrderRequest extends FormRequest
             'payments.*.payment_method' => ['required', 'string', 'in:cash,card,ewallet'],
             'payments.*.amount' => ['required', 'numeric', 'min:0.01', 'max:999999.99'],
             'payments.*.tendered_amount' => ['nullable', 'numeric', 'min:0'],
+            'order_type' => ['sometimes', 'string', 'in:dine_in,takeaway,delivery'],
+            'table_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('dining_tables', 'id')->where('workspace_id', $this->user()?->workspace_id),
+            ],
+            'guest_count' => ['sometimes', 'integer', 'min:1', 'max:999'],
+            'kitchen_notes' => ['nullable', 'string', 'max:2000'],
         ];
     }
 

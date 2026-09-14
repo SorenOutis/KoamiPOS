@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BusinessType;
 use Database\Factories\WorkspaceFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,9 +15,19 @@ use Illuminate\Support\Facades\Storage;
 /**
  * @property int $id
  * @property string $name
+ * @property BusinessType|null $business_type
  * @property string $slug
  * @property string|null $phone
  * @property string|null $address
+ * @property string $currency_code
+ * @property string $currency_symbol
+ * @property float $tax_rate
+ * @property bool $tax_inclusive
+ * @property float $service_charge_rate
+ * @property string|null $receipt_header
+ * @property string|null $receipt_footer
+ * @property string $receipt_printer_type
+ * @property array<string, mixed>|null $settings
  * @property string|null $logo_path
  * @property bool $is_active
  */
@@ -27,9 +38,19 @@ class Workspace extends Model
 
     protected $fillable = [
         'name',
+        'business_type',
         'slug',
         'phone',
         'address',
+        'currency_code',
+        'currency_symbol',
+        'tax_rate',
+        'tax_inclusive',
+        'service_charge_rate',
+        'receipt_header',
+        'receipt_footer',
+        'receipt_printer_type',
+        'settings',
         'logo_path',
         'is_active',
     ];
@@ -42,7 +63,12 @@ class Workspace extends Model
     protected function casts(): array
     {
         return [
+            'business_type' => BusinessType::class,
             'is_active' => 'boolean',
+            'tax_inclusive' => 'boolean',
+            'tax_rate' => 'decimal:2',
+            'service_charge_rate' => 'decimal:2',
+            'settings' => 'array',
         ];
     }
 
@@ -73,9 +99,6 @@ class Workspace extends Model
     /**
      * @return HasMany<Category, $this>
      */
-    /**
-     * @return HasMany<Category, $this>
-     */
     public function categories(): HasMany
     {
         return $this->hasMany(Category::class);
@@ -103,6 +126,34 @@ class Workspace extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * @return HasMany<TaxRule, $this>
+     */
+    public function taxRules(): HasMany
+    {
+        return $this->hasMany(TaxRule::class);
+    }
+
+    public function isHospitality(): bool
+    {
+        return $this->business_type instanceof BusinessType && $this->business_type->isHospitality();
+    }
+
+    public function hasFeature(string $feature): bool
+    {
+        $settings = $this->settings;
+
+        if (is_array($settings) && array_key_exists($feature, $settings)) {
+            return (bool) $settings[$feature];
+        }
+
+        if ($this->business_type instanceof BusinessType) {
+            return $this->business_type->defaultFeatures()[$feature] ?? false;
+        }
+
+        return false;
     }
 
     /**
