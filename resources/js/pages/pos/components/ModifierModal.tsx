@@ -55,7 +55,11 @@ export default function ModifierModal({
         if (product.modifiers) {
             for (const mod of product.modifiers) {
                 // If single selection and required, default to first option
-                if (mod.min_selections === 1 && mod.max_selections === 1 && mod.options.length > 0) {
+                if (
+                    mod.min_selections === 1 &&
+                    mod.max_selections === 1 &&
+                    mod.options.length > 0
+                ) {
                     initial[mod.id] = [mod.options[0].id];
                 } else {
                     initial[mod.id] = [];
@@ -74,7 +78,11 @@ export default function ModifierModal({
 
             if (modifier.max_selections === 1) {
                 // Single-select mode (radio style)
-                if (isSelected && !modifier.is_required && modifier.min_selections === 0) {
+                if (
+                    isSelected &&
+                    !modifier.is_required &&
+                    modifier.min_selections === 0
+                ) {
                     return { ...prev, [modifier.id]: [] };
                 }
                 return { ...prev, [modifier.id]: [optionId] };
@@ -106,7 +114,9 @@ export default function ModifierModal({
         }
         for (const mod of product.modifiers) {
             const chosen = selectedOptions[mod.id] ?? [];
-            const min = mod.is_required ? Math.max(1, mod.min_selections) : mod.min_selections;
+            const min = mod.is_required
+                ? Math.max(1, mod.min_selections)
+                : mod.min_selections;
             if (chosen.length < min) {
                 return false;
             }
@@ -143,7 +153,10 @@ export default function ModifierModal({
 
     const unitPrice = useMemo(() => {
         if (!product) return 0;
-        const modDelta = flatModifiers.reduce((sum, m) => sum + m.price_delta, 0);
+        const modDelta = flatModifiers.reduce(
+            (sum, m) => sum + m.price_delta,
+            0,
+        );
         return Number(product.price) + modDelta;
     }, [product, flatModifiers]);
 
@@ -155,33 +168,39 @@ export default function ModifierModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-                <DialogHeader className="p-5 border-b shrink-0">
+            <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden p-0 sm:max-w-xl">
+                <DialogHeader className="shrink-0 border-b p-5">
                     <div className="flex items-center gap-3">
                         <LetterFallbackImage
                             src={product.image_url ?? null}
                             alt={product.name}
                             size={48}
-                            className="rounded-xl shrink-0"
+                            className="shrink-0 rounded-xl"
                             fallbackClassName="text-base font-bold"
                         />
                         <div className="min-w-0 flex-1">
-                            <DialogTitle className="text-xl font-bold truncate">
+                            <DialogTitle className="truncate text-xl font-bold">
                                 {product.name}
                             </DialogTitle>
-                            <p className="text-sm text-muted-foreground mt-0.5">
-                                Base: {currencySymbol}{Number(product.price).toFixed(2)}
+                            <p className="text-muted-foreground mt-0.5 text-sm">
+                                Base: {currencySymbol}
+                                {Number(product.price).toFixed(2)}
                             </p>
                         </div>
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                <div className="flex-1 space-y-6 overflow-y-auto p-5">
                     {/* Modifiers groups */}
                     {product.modifiers?.map((modifier) => {
                         const chosen = selectedOptions[modifier.id] ?? [];
-                        const isRequired = modifier.is_required || modifier.min_selections > 0;
-                        const isSatisfied = chosen.length >= (isRequired ? Math.max(1, modifier.min_selections) : 0);
+                        const isRequired =
+                            modifier.is_required || modifier.min_selections > 0;
+                        const isSatisfied =
+                            chosen.length >=
+                            (isRequired
+                                ? Math.max(1, modifier.min_selections)
+                                : 0);
 
                         return (
                             <div key={modifier.id} className="space-y-2.5">
@@ -191,7 +210,11 @@ export default function ModifierModal({
                                             {modifier.name}
                                         </Label>
                                         <Badge
-                                            variant={isSatisfied ? 'outline' : 'destructive'}
+                                            variant={
+                                                isSatisfied
+                                                    ? 'outline'
+                                                    : 'destructive'
+                                            }
                                             className="text-[10px] font-medium"
                                         >
                                             {isRequired
@@ -203,44 +226,59 @@ export default function ModifierModal({
                                                   : `Optional (Up to ${modifier.max_selections})`}
                                         </Badge>
                                     </div>
-                                    <span className="text-xs text-muted-foreground tabular-nums">
-                                        {chosen.length}/{modifier.max_selections} selected
+                                    <span className="text-muted-foreground text-xs tabular-nums">
+                                        {chosen.length}/
+                                        {modifier.max_selections} selected
                                     </span>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                     {modifier.options.map((option) => {
-                                        const isSelected = chosen.includes(option.id);
-                                        const priceDelta = Number(option.price_delta);
+                                        const isSelected = chosen.includes(
+                                            option.id,
+                                        );
+                                        const priceDelta = Number(
+                                            option.price_delta,
+                                        );
 
                                         return (
                                             <button
                                                 key={option.id}
                                                 type="button"
-                                                onClick={() => toggleOption(modifier, option.id)}
+                                                onClick={() =>
+                                                    toggleOption(
+                                                        modifier,
+                                                        option.id,
+                                                    )
+                                                }
                                                 className={cn(
                                                     'flex items-center justify-between rounded-xl border p-3 text-left transition-all select-none',
                                                     isSelected
-                                                        ? 'border-primary bg-primary/10 text-primary font-medium ring-1 ring-primary'
+                                                        ? 'border-primary bg-primary/10 text-primary ring-primary font-medium ring-1'
                                                         : 'border-border bg-card hover:bg-muted/50 text-foreground',
                                                 )}
                                             >
-                                                <div className="flex items-center gap-2 min-w-0">
+                                                <div className="flex min-w-0 items-center gap-2">
                                                     <div
                                                         className={cn(
-                                                            'size-4 rounded-full border flex items-center justify-center text-[10px]',
+                                                            'flex size-4 items-center justify-center rounded-full border text-[10px]',
                                                             isSelected
                                                                 ? 'bg-primary border-primary text-primary-foreground'
                                                                 : 'border-muted-foreground/50',
                                                         )}
                                                     >
-                                                        {isSelected && <Check className="size-2.5 stroke-[3]" />}
+                                                        {isSelected && (
+                                                            <Check className="size-2.5 stroke-[3]" />
+                                                        )}
                                                     </div>
-                                                    <span className="text-sm truncate">{option.name}</span>
+                                                    <span className="truncate text-sm">
+                                                        {option.name}
+                                                    </span>
                                                 </div>
                                                 {priceDelta > 0 && (
-                                                    <span className="text-xs font-semibold tabular-nums ml-2 shrink-0">
-                                                        +{currencySymbol}{priceDelta.toFixed(2)}
+                                                    <span className="ml-2 shrink-0 text-xs font-semibold tabular-nums">
+                                                        +{currencySymbol}
+                                                        {priceDelta.toFixed(2)}
                                                     </span>
                                                 )}
                                             </button>
@@ -253,7 +291,10 @@ export default function ModifierModal({
 
                     {/* Prep Notes */}
                     <div className="space-y-2">
-                        <Label htmlFor="prep_notes" className="text-sm font-semibold">
+                        <Label
+                            htmlFor="prep_notes"
+                            className="text-sm font-semibold"
+                        >
                             Kitchen Prep Instructions
                         </Label>
                         <Input
@@ -268,8 +309,10 @@ export default function ModifierModal({
                     {/* Quantity Selector */}
                     <div className="flex items-center justify-between border-t pt-4">
                         <div>
-                            <span className="text-sm font-semibold block">Quantity</span>
-                            <span className="text-xs text-muted-foreground">
+                            <span className="block text-sm font-semibold">
+                                Quantity
+                            </span>
+                            <span className="text-muted-foreground text-xs">
                                 Stock available: {product.stock_quantity}
                             </span>
                         </div>
@@ -279,12 +322,14 @@ export default function ModifierModal({
                                 size="icon"
                                 variant="outline"
                                 className="size-10 rounded-xl"
-                                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                                onClick={() =>
+                                    setQuantity((q) => Math.max(1, q - 1))
+                                }
                                 disabled={quantity <= 1}
                             >
                                 <Minus className="size-4" />
                             </Button>
-                            <span className="w-10 text-center font-bold text-base tabular-nums">
+                            <span className="w-10 text-center text-base font-bold tabular-nums">
                                 {quantity}
                             </span>
                             <Button
@@ -305,7 +350,7 @@ export default function ModifierModal({
                     </div>
                 </div>
 
-                <DialogFooter className="p-4 border-t bg-muted/20 shrink-0 flex sm:justify-between items-center gap-3">
+                <DialogFooter className="bg-muted/20 flex shrink-0 items-center gap-3 border-t p-4 sm:justify-between">
                     <Button type="button" variant="ghost" onClick={onClose}>
                         Cancel
                     </Button>
@@ -318,7 +363,8 @@ export default function ModifierModal({
                         }}
                         className="h-11 px-6 text-base font-bold shadow"
                     >
-                        Add to Order • {currencySymbol}{lineTotal.toFixed(2)}
+                        Add to Order • {currencySymbol}
+                        {lineTotal.toFixed(2)}
                     </Button>
                 </DialogFooter>
             </DialogContent>

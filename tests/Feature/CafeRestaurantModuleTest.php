@@ -31,6 +31,16 @@ it('shows workspace dining tables only to the workspace POS user', function () {
     );
 });
 
+it('blocks restaurant-only screens when workspace features are disabled', function () {
+    $workspace = Workspace::factory()->create([
+        'settings' => ['has_tables' => false, 'has_kds' => false],
+    ]);
+    $cashier = User::factory()->cashier($workspace)->create();
+
+    $this->actingAs($cashier)->get(route('pos.tables.index'))->assertNotFound();
+    $this->actingAs($cashier)->get(route('pos.kds.index'))->assertNotFound();
+});
+
 it('stages a dine-in order with modifiers and occupies its table', function () {
     $workspace = Workspace::factory()->create([
         'business_type' => 'restaurant',

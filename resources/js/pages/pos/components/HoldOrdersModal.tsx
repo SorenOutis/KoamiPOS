@@ -46,10 +46,10 @@ export default function HoldOrdersModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
-                <DialogHeader className="p-5 border-b shrink-0">
+            <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden p-0 sm:max-w-xl">
+                <DialogHeader className="shrink-0 border-b p-5">
                     <div className="flex items-center gap-2">
-                        <PauseCircle className="size-5 text-primary" />
+                        <PauseCircle className="text-primary size-5" />
                         <DialogTitle className="text-xl font-bold">
                             Parked / Held Orders
                         </DialogTitle>
@@ -59,10 +59,10 @@ export default function HoldOrdersModal({
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto p-5 space-y-3">
+                <div className="flex-1 space-y-3 overflow-y-auto p-5">
                     {heldOrders.length === 0 ? (
-                        <div className="text-center py-12 text-muted-foreground text-sm border rounded-xl border-dashed">
-                            <Clock className="size-8 mx-auto mb-2 opacity-40" />
+                        <div className="text-muted-foreground rounded-xl border border-dashed py-12 text-center text-sm">
+                            <Clock className="mx-auto mb-2 size-8 opacity-40" />
                             No parked orders currently held.
                         </div>
                     ) : (
@@ -76,11 +76,11 @@ export default function HoldOrdersModal({
                             return (
                                 <div
                                     key={order.id}
-                                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border bg-card hover:border-primary/50 transition-colors shadow-sm"
+                                    className="bg-card hover:border-primary/50 flex flex-col justify-between gap-3 rounded-xl border p-4 shadow-sm transition-colors sm:flex-row sm:items-center"
                                 >
-                                    <div className="space-y-1 min-w-0">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="font-bold text-base text-foreground">
+                                    <div className="min-w-0 space-y-1">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <span className="text-foreground text-base font-bold">
                                                 {order.label}
                                             </span>
                                             {order.tableName && (
@@ -93,14 +93,19 @@ export default function HoldOrdersModal({
                                             )}
                                             <Badge
                                                 variant="secondary"
-                                                className="text-[10px] uppercase font-mono"
+                                                className="font-mono text-[10px] uppercase"
                                             >
-                                                {order.orderType?.replace('_', ' ')}
+                                                {order.orderType?.replace(
+                                                    '_',
+                                                    ' ',
+                                                )}
                                             </Badge>
                                         </div>
 
-                                        <p className="text-xs text-muted-foreground flex items-center gap-2">
-                                            <span>Parked at {order.heldAt}</span>
+                                        <p className="text-muted-foreground flex items-center gap-2 text-xs">
+                                            <span>
+                                                Parked at {order.heldAt}
+                                            </span>
                                             <span>•</span>
                                             <span>
                                                 {totalUnits} item
@@ -109,20 +114,21 @@ export default function HoldOrdersModal({
                                             {order.discountCode && (
                                                 <>
                                                     <span>•</span>
-                                                    <span className="text-emerald-600 font-medium">
-                                                        Code: {order.discountCode}
+                                                    <span className="font-medium text-emerald-600">
+                                                        Code:{' '}
+                                                        {order.discountCode}
                                                     </span>
                                                 </>
                                             )}
                                         </p>
 
-                                        <p className="text-sm font-semibold text-foreground pt-1">
+                                        <p className="text-foreground pt-1 text-sm font-semibold">
                                             Total: {currencySymbol}
                                             {total.toFixed(2)}
                                         </p>
                                     </div>
 
-                                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                                    <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
                                         <Button
                                             type="button"
                                             size="icon"
@@ -140,7 +146,7 @@ export default function HoldOrdersModal({
                                                 onRecall(order.id);
                                                 onClose();
                                             }}
-                                            className="font-semibold gap-1.5"
+                                            className="gap-1.5 font-semibold"
                                         >
                                             <ArrowLeft className="size-3.5" />
                                             Resume Order
@@ -152,8 +158,13 @@ export default function HoldOrdersModal({
                     )}
                 </div>
 
-                <DialogFooter className="p-4 border-t bg-muted/20 shrink-0">
-                    <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto">
+                <DialogFooter className="bg-muted/20 shrink-0 border-t p-4">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={onClose}
+                        className="w-full sm:w-auto"
+                    >
                         Close
                     </Button>
                 </DialogFooter>

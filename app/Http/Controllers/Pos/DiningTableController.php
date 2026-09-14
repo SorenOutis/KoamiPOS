@@ -16,6 +16,7 @@ class DiningTableController extends Controller
         $user = $request->user();
 
         abort_unless($user->workspace_id !== null, 403);
+        abort_unless($user->workspace?->hasFeature('has_tables') === true, 404);
 
         $floors = Floor::forWorkspace($user->workspace_id)
             ->with(['tables' => fn ($query) => $query
@@ -43,11 +44,11 @@ class DiningTableController extends Controller
             ])->all();
 
         return Inertia::render('pos/tables/index', [
-            'workspace' => $user->workspace ? [
+            'workspace' => [
                 'id' => $user->workspace->id,
                 'name' => $user->workspace->name,
                 'currency_symbol' => $user->workspace->currency_symbol,
-            ] : null,
+            ],
             'floors' => $floors,
         ]);
     }

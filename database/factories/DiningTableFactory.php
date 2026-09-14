@@ -33,7 +33,7 @@ class DiningTableFactory extends Factory
     {
         return $this->state(fn (array $attributes): array => [
             'workspace_id' => $workspace->id,
-            'floor_id' => $floor?->id ?? Floor::factory()->forWorkspace($workspace),
+            'floor_id' => $floor ? $floor->id : Floor::factory()->forWorkspace($workspace),
         ]);
     }
 }

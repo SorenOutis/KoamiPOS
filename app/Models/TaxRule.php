@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\BelongsToWorkspace;
+use Database\Factories\TaxRuleFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,7 +20,10 @@ use Illuminate\Database\Eloquent\Model;
  */
 class TaxRule extends Model
 {
-    use BelongsToWorkspace, HasFactory;
+    use BelongsToWorkspace;
+
+    /** @use HasFactory<TaxRuleFactory> */
+    use HasFactory;
 
     protected $fillable = [
         'workspace_id',

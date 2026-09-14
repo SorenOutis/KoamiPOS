@@ -2,23 +2,16 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { PosProduct } from '@/components/ProductTile';
 import usePosCart from '@/hooks/use-pos-cart';
-import type {
-    CartModifierSelection,
-    HeldOrder,
-} from '@/hooks/use-pos-cart';
+import type { CartModifierSelection, HeldOrder } from '@/hooks/use-pos-cart';
 import orders from '@/routes/pos/orders';
 import type { Auth, Workspace } from '@/types/auth';
 import CartSection from './components/CartSection';
 import CatalogSection from './components/CatalogSection';
 import HoldOrdersModal from './components/HoldOrdersModal';
 import ModifierModal from './components/ModifierModal';
-import PaymentModal, {
-    type SplitPaymentLine,
-} from './components/PaymentModal';
+import PaymentModal, { type SplitPaymentLine } from './components/PaymentModal';
 import PosHeader from './components/PosHeader';
-import ReceiptModal, {
-    type CompletedOrder,
-} from './components/ReceiptModal';
+import ReceiptModal, { type CompletedOrder } from './components/ReceiptModal';
 import TableSelectModal, {
     type FloorData,
 } from './components/TableSelectModal';
@@ -115,15 +108,18 @@ function PosIndex({
     const [paymentErrorMessage, setPaymentErrorMessage] = useState<
         string | null
     >(null);
-    const [completedOrder, setCompletedOrder] =
-        useState<CompletedOrder | null>(null);
+    const [completedOrder, setCompletedOrder] = useState<CompletedOrder | null>(
+        null,
+    );
 
     // Dynamic Financial Calculations
     const subtotal = useMemo(() => {
         return (
             Math.round(
                 items.reduce((sum, line) => {
-                    const product = products.find((p) => p.id === line.productId);
+                    const product = products.find(
+                        (p) => p.id === line.productId,
+                    );
                     const base = product ? Number(product.price) : 0;
                     const modsDelta = line.modifiers.reduce(
                         (mSum, m) => mSum + m.price_delta,
@@ -162,14 +158,15 @@ function PosIndex({
 
     const { serviceChargeAmount, taxAmount, total } = useMemo(() => {
         if (taxRate <= 0) {
-            const serviceCharge = Math.round(
-                netAfterDiscount * (serviceChargeRate / 100) * 100,
-            ) / 100;
+            const serviceCharge =
+                Math.round(netAfterDiscount * (serviceChargeRate / 100) * 100) /
+                100;
 
             return {
                 serviceChargeAmount: serviceCharge,
                 taxAmount: 0,
-                total: Math.round((netAfterDiscount + serviceCharge) * 100) / 100,
+                total:
+                    Math.round((netAfterDiscount + serviceCharge) * 100) / 100,
             };
         }
         const mult = taxRate / 100;
@@ -177,21 +174,25 @@ function PosIndex({
             const base =
                 Math.round((netAfterDiscount / (1 + mult)) * 100) / 100;
             const tax = Math.round((netAfterDiscount - base) * 100) / 100;
-            const serviceCharge = Math.round(
-                (netAfterDiscount / (1 + mult)) * (serviceChargeRate / 100) * 100,
-            ) / 100;
+            const serviceCharge =
+                Math.round(
+                    (netAfterDiscount / (1 + mult)) *
+                        (serviceChargeRate / 100) *
+                        100,
+                ) / 100;
 
             return {
                 serviceChargeAmount: serviceCharge,
                 taxAmount: tax,
-                total: Math.round((netAfterDiscount + serviceCharge) * 100) / 100,
+                total:
+                    Math.round((netAfterDiscount + serviceCharge) * 100) / 100,
             };
         }
         const tax = Math.round(netAfterDiscount * mult * 100) / 100;
         const tot = Math.round((netAfterDiscount + tax) * 100) / 100;
-        const serviceCharge = Math.round(
-            netAfterDiscount * (serviceChargeRate / 100) * 100,
-        ) / 100;
+        const serviceCharge =
+            Math.round(netAfterDiscount * (serviceChargeRate / 100) * 100) /
+            100;
         return {
             serviceChargeAmount: serviceCharge,
             taxAmount: tax,
@@ -363,28 +364,35 @@ function PosIndex({
                             modifier_option_id: m.modifier_option_id,
                         })),
                     })),
-                    payment_method: splitPayments && splitPayments.length > 0
-                        ? splitPayments[0].method
-                        : paymentMethod,
+                    payment_method:
+                        splitPayments && splitPayments.length > 0
+                            ? splitPayments[0].method
+                            : paymentMethod,
                     discount_code: discountCode.trim()
                         ? discountCode.trim().toUpperCase()
                         : null,
                     status: 'pending',
                     order_type: orderType,
                     table_id:
-                        orderType === 'dine_in' ? selectedTable?.id ?? null : null,
+                        orderType === 'dine_in'
+                            ? (selectedTable?.id ?? null)
+                            : null,
                     guest_count: guestCount,
-                    kitchen_notes: items
-                        .map((line) => line.prepNotes)
-                        .filter(Boolean)
-                        .join('; ') || null,
+                    kitchen_notes:
+                        items
+                            .map((line) => line.prepNotes)
+                            .filter(Boolean)
+                            .join('; ') || null,
                 },
                 {
                     onSuccess: (page) => {
-                        const stagedOrder = page.props?.order as CompletedOrder | null;
+                        const stagedOrder = page.props
+                            ?.order as CompletedOrder | null;
                         if (!stagedOrder?.id) {
                             setIsProcessingSale(false);
-                            setPaymentErrorMessage('Unable to reserve stock for this order.');
+                            setPaymentErrorMessage(
+                                'Unable to reserve stock for this order.',
+                            );
                             return;
                         }
 
@@ -414,7 +422,8 @@ function PosIndex({
                             {
                                 onSuccess: (completePage) => {
                                     const finalOrder = (completePage.props
-                                        ?.order ?? stagedOrder) as CompletedOrder;
+                                        ?.order ??
+                                        stagedOrder) as CompletedOrder;
 
                                     setIsProcessingSale(false);
                                     setIsPaymentModalOpen(false);
@@ -460,21 +469,14 @@ function PosIndex({
                 },
             );
         },
-        [
-            items,
-            discountCode,
-            orderType,
-            selectedTable,
-            guestCount,
-            clearCart,
-        ],
+        [items, discountCode, orderType, selectedTable, guestCount, clearCart],
     );
 
     return (
         <>
             <Head title="POS Terminal — KoamiPOS" />
 
-            <div className="flex flex-col h-screen w-screen overflow-hidden bg-background text-foreground select-none">
+            <div className="bg-background text-foreground flex h-screen w-screen flex-col overflow-hidden select-none">
                 {/* Fixed POS Header */}
                 <PosHeader
                     workspace={workspace}
@@ -491,7 +493,7 @@ function PosIndex({
                 />
 
                 {/* Main 2-Column Responsive Split Terminal */}
-                <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_340px] lg:grid-cols-[minmax(0,1fr)_390px] xl:grid-cols-[minmax(0,1fr)_440px] overflow-hidden">
+                <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden md:grid-cols-[minmax(0,1fr)_340px] lg:grid-cols-[minmax(0,1fr)_390px] xl:grid-cols-[minmax(0,1fr)_440px]">
                     {/* Left Panel: Fast Lookup & Catalog */}
                     <div className="h-full min-h-0 overflow-hidden">
                         <CatalogSection

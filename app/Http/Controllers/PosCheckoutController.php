@@ -112,12 +112,12 @@ class PosCheckoutController extends Controller
         $workspace = $user->workspace;
         abort_unless($workspace !== null, 403);
 
-        $orderType = $validated['order_type'] ?? (isset($validated['table_id']) ? 'dine_in' : 'takeaway');
+        $orderType = $validated['order_type'] ?? 'takeaway';
         $table = null;
 
-        if ($orderType === 'dine_in' && isset($validated['table_id'])) {
+        if ($orderType === 'dine_in' && array_key_exists('table_id', $validated) && $validated['table_id'] !== null) {
             $table = DiningTable::forWorkspace($workspaceId)
-                ->whereKey($validated['table_id'] ?? 0)
+                ->whereKey($validated['table_id'])
                 ->lockForUpdate()
                 ->first();
 
@@ -126,7 +126,7 @@ class PosCheckoutController extends Controller
                     'table_id' => 'The selected table is not available.',
                 ]);
             }
-        } elseif (isset($validated['table_id'])) {
+        } elseif (array_key_exists('table_id', $validated) && $validated['table_id'] !== null) {
             throw ValidationException::withMessages([
                 'table_id' => 'A table can only be assigned to a dine-in order.',
             ]);
@@ -271,10 +271,13 @@ class PosCheckoutController extends Controller
                 'name' => $loadedOrder->cashier->name,
                 'email' => $loadedOrder->cashier->email,
             ] : null,
-            'workspace' => $user->workspace ? [
+            'workspace' => [
                 'id' => $user->workspace->id,
                 'name' => $user->workspace->name,
-            ] : null,
+                'currency_symbol' => $user->workspace->currency_symbol,
+                'tax_rate' => (float) $user->workspace->tax_rate,
+                'tax_inclusive' => (bool) $user->workspace->tax_inclusive,
+            ],
         ];
 
         if ($loadedOrder->status === OrderStatus::Completed->value) {
@@ -283,10 +286,13 @@ class PosCheckoutController extends Controller
 
         return Inertia::render('pos/sales/show', [
             'order' => $orderArray,
-            'workspace' => $user->workspace ? [
+            'workspace' => [
                 'id' => $user->workspace->id,
                 'name' => $user->workspace->name,
-            ] : null,
+                'currency_symbol' => $user->workspace->currency_symbol,
+                'tax_rate' => (float) $user->workspace->tax_rate,
+                'tax_inclusive' => (bool) $user->workspace->tax_inclusive,
+            ],
         ])->with('success', 'Order staged.');
     }
 
@@ -421,7 +427,7 @@ class PosCheckoutController extends Controller
         $resolved = [];
 
         foreach ($selections as $selection) {
-            $optionId = (int) ($selection['modifier_option_id'] ?? 0);
+            $optionId = (int) $selection['modifier_option_id'];
             $available = $availableOptions[$optionId] ?? null;
 
             if (! $available) {

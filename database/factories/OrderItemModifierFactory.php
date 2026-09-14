@@ -31,9 +31,9 @@ class OrderItemModifierFactory extends Factory
     {
         return $this->state(fn (array $attributes): array => [
             'order_item_id' => $orderItem->id,
-            'modifier_option_id' => $option?->id ?? ModifierOption::factory(),
-            'name' => $option?->name ?? $attributes['name'],
-            'price' => $option?->price_delta ?? $attributes['price'],
+            'modifier_option_id' => $option ? $option->id : ModifierOption::factory(),
+            'name' => $option ? $option->name : $attributes['name'],
+            'price' => $option ? $option->price_delta : $attributes['price'],
         ]);
     }
 }

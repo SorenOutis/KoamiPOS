@@ -131,18 +131,18 @@ export default function CatalogSection({
     }, [products]);
 
     return (
-        <div className="flex flex-col h-full min-h-0 bg-background overflow-hidden">
+        <div className="bg-background flex h-full min-h-0 flex-col overflow-hidden">
             {/* Top Bar: Search Input */}
-            <div className="p-3 border-b bg-card shrink-0">
+            <div className="bg-card shrink-0 border-b p-3">
                 <div className="relative">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                    <Search className="text-muted-foreground absolute top-1/2 left-3.5 size-4 -translate-y-1/2" />
                     <Input
                         ref={searchInputRef}
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search products by name or scan barcode... (Press / to focus)"
-                        className="pl-9 pr-9 h-10 text-sm bg-muted/30 rounded-xl focus-visible:ring-primary"
+                        className="bg-muted/30 focus-visible:ring-primary h-10 rounded-xl pr-9 pl-9 text-sm"
                     />
                     {searchQuery && (
                         <button
@@ -151,7 +151,7 @@ export default function CatalogSection({
                                 setSearchQuery('');
                                 searchInputRef.current?.focus();
                             }}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
                             aria-label="Clear search"
                         >
                             <X className="size-4" />
@@ -160,12 +160,12 @@ export default function CatalogSection({
                 </div>
 
                 {/* Category Pills horizontal scroll */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pt-2.5 pb-0.5 no-scrollbar">
+                <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto pt-2.5 pb-0.5">
                     <button
                         type="button"
                         onClick={() => setActiveCategoryId(null)}
                         className={cn(
-                            'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all select-none',
+                            'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all select-none',
                             activeCategoryId === null
                                 ? 'bg-primary text-primary-foreground shadow-xs'
                                 : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -175,7 +175,7 @@ export default function CatalogSection({
                         <Badge
                             variant="secondary"
                             className={cn(
-                                'text-[10px] px-1.5 py-0 rounded-full',
+                                'rounded-full px-1.5 py-0 text-[10px]',
                                 activeCategoryId === null
                                     ? 'bg-primary-foreground/20 text-primary-foreground'
                                     : 'bg-background/80 text-foreground',
@@ -194,10 +194,12 @@ export default function CatalogSection({
                                 key={cat.id}
                                 type="button"
                                 onClick={() =>
-                                    setActiveCategoryId(isActive ? null : cat.id)
+                                    setActiveCategoryId(
+                                        isActive ? null : cat.id,
+                                    )
                                 }
                                 className={cn(
-                                    'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all select-none',
+                                    'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all select-none',
                                     isActive
                                         ? 'bg-primary text-primary-foreground shadow-xs'
                                         : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -214,7 +216,7 @@ export default function CatalogSection({
                                 <Badge
                                     variant="secondary"
                                     className={cn(
-                                        'text-[10px] px-1.5 py-0 rounded-full',
+                                        'rounded-full px-1.5 py-0 text-[10px]',
                                         isActive
                                             ? 'bg-primary-foreground/20 text-primary-foreground'
                                             : 'bg-background/80 text-foreground',
@@ -229,14 +231,14 @@ export default function CatalogSection({
             </div>
 
             {/* Products Grid */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-3.5">
+            <div className="min-h-0 flex-1 overflow-y-auto p-3.5">
                 {filteredProducts.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-48 text-center text-muted-foreground p-6 border rounded-2xl border-dashed">
-                        <Search className="size-8 opacity-30 mb-2" />
-                        <p className="text-sm font-semibold text-foreground">
+                    <div className="text-muted-foreground flex h-48 flex-col items-center justify-center rounded-2xl border border-dashed p-6 text-center">
+                        <Search className="mb-2 size-8 opacity-30" />
+                        <p className="text-foreground text-sm font-semibold">
                             No products found
                         </p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                        <p className="text-muted-foreground mt-0.5 text-xs">
                             {searchQuery
                                 ? `No matches for "${searchQuery}". Try a different keyword.`
                                 : 'No products available in this category.'}
@@ -245,14 +247,14 @@ export default function CatalogSection({
                             <button
                                 type="button"
                                 onClick={() => setSearchQuery('')}
-                                className="mt-3 text-xs text-primary font-semibold hover:underline"
+                                className="text-primary mt-3 text-xs font-semibold hover:underline"
                             >
                                 Clear search
                             </button>
                         )}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                         {filteredProducts.map((product) => (
                             <PosProductTile
                                 key={product.id}

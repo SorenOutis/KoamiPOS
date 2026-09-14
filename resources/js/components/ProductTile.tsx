@@ -120,7 +120,8 @@ export default function ProductTile({
 
             <div className="mt-auto flex w-full items-center justify-between gap-2">
                 <span className="text-sm font-semibold tabular-nums">
-                    {currencySymbol}{Number(product.price).toFixed(2)}
+                    {currencySymbol}
+                    {Number(product.price).toFixed(2)}
                 </span>
                 {soldOut ? (
                     <Badge variant="outline" className="text-[10px]">

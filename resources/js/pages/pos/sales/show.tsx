@@ -221,7 +221,10 @@ export default function PosSalesShow({ order, workspace }: Props) {
                                             </span>
                                         </span>
                                         <span className="tabular-nums">
-                                            {formatMoney(Number(item.total), currencySymbol)}
+                                            {formatMoney(
+                                                Number(item.total),
+                                                currencySymbol,
+                                            )}
                                         </span>
                                     </div>
                                 ))}
@@ -235,7 +238,10 @@ export default function PosSalesShow({ order, workspace }: Props) {
                                 Subtotal
                             </span>
                             <span className="tabular-nums">
-                                {formatMoney(Number(order.subtotal), currencySymbol)}
+                                {formatMoney(
+                                    Number(order.subtotal),
+                                    currencySymbol,
+                                )}
                             </span>
                         </div>
                         <div className="flex justify-between">
@@ -243,12 +249,17 @@ export default function PosSalesShow({ order, workspace }: Props) {
                                 Discount
                             </span>
                             <span className="tabular-nums">
-                                −{formatMoney(Number(order.discount), currencySymbol)}
+                                −
+                                {formatMoney(
+                                    Number(order.discount),
+                                    currencySymbol,
+                                )}
                             </span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">
-                                Tax ({workspace?.tax_rate ?? 12}%{workspace?.tax_inclusive ? ' incl.' : ''})
+                                Tax ({workspace?.tax_rate ?? 12}%
+                                {workspace?.tax_inclusive ? ' incl.' : ''})
                             </span>
                             <span className="tabular-nums">
                                 {formatMoney(Number(order.tax), currencySymbol)}
@@ -267,7 +278,10 @@ export default function PosSalesShow({ order, workspace }: Props) {
                         <div className="flex justify-between border-t pt-1 text-base font-semibold">
                             <span>Total</span>
                             <span className="tabular-nums">
-                                {formatMoney(Number(order.total), currencySymbol)}
+                                {formatMoney(
+                                    Number(order.total),
+                                    currencySymbol,
+                                )}
                             </span>
                         </div>
 

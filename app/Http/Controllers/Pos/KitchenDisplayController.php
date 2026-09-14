@@ -21,6 +21,7 @@ class KitchenDisplayController extends Controller
         $user = $request->user();
 
         abort_unless($user->workspace_id !== null, 403);
+        abort_unless($user->workspace?->hasFeature('has_kds') === true, 404);
 
         $orders = Order::forWorkspace($user->workspace_id)
             ->forKds()
@@ -36,10 +37,10 @@ class KitchenDisplayController extends Controller
             ->get();
 
         return Inertia::render('pos/kds/index', [
-            'workspace' => $user->workspace ? [
+            'workspace' => [
                 'id' => $user->workspace->id,
                 'name' => $user->workspace->name,
-            ] : null,
+            ],
             'orders' => $orders->map(fn (Order $order): array => [
                 'id' => $order->id,
                 'order_type' => $order->order_type,

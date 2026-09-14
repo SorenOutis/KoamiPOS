@@ -64,26 +64,26 @@ export default function TableSelectModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col p-0 overflow-hidden">
-                <DialogHeader className="p-5 border-b shrink-0">
+            <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden p-0 sm:max-w-lg">
+                <DialogHeader className="shrink-0 border-b p-5">
                     <div className="flex items-center gap-2">
-                        <UtensilsCrossed className="size-5 text-primary" />
+                        <UtensilsCrossed className="text-primary size-5" />
                         <DialogTitle className="text-xl font-bold">
                             Select Dining Table
                         </DialogTitle>
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto p-5 space-y-5">
+                <div className="flex-1 space-y-5 overflow-y-auto p-5">
                     {/* Guest Count Selector */}
-                    <div className="flex items-center justify-between bg-muted/40 p-3.5 rounded-xl border">
+                    <div className="bg-muted/40 flex items-center justify-between rounded-xl border p-3.5">
                         <div className="flex items-center gap-2">
-                            <Users className="size-4 text-muted-foreground" />
+                            <Users className="text-muted-foreground size-4" />
                             <div>
                                 <Label className="text-sm font-semibold">
                                     Number of Guests
                                 </Label>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-muted-foreground text-xs">
                                     Used for covers & reporting
                                 </p>
                             </div>
@@ -101,7 +101,7 @@ export default function TableSelectModal({
                             >
                                 <Minus className="size-3.5" />
                             </Button>
-                            <span className="w-8 text-center font-bold text-base tabular-nums">
+                            <span className="w-8 text-center text-base font-bold tabular-nums">
                                 {tempGuests}
                             </span>
                             <Button
@@ -131,7 +131,7 @@ export default function TableSelectModal({
                                             setActiveFloorId(floor.id)
                                         }
                                         className={cn(
-                                            'px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
+                                            'rounded-lg px-3 py-1.5 text-xs font-semibold transition-all',
                                             isActive
                                                 ? 'bg-primary text-primary-foreground shadow-sm'
                                                 : 'bg-muted/50 hover:bg-muted text-muted-foreground',
@@ -147,14 +147,15 @@ export default function TableSelectModal({
                     {/* Table Tiles Grid */}
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                Available Tables ({currentFloor?.name ?? 'Floor'})
+                            <Label className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                                Available Tables (
+                                {currentFloor?.name ?? 'Floor'})
                             </Label>
                             {tempTable && (
                                 <button
                                     type="button"
                                     onClick={() => setTempTable(null)}
-                                    className="text-xs text-primary hover:underline font-medium"
+                                    className="text-primary text-xs font-medium hover:underline"
                                 >
                                     Clear selection
                                 </button>
@@ -162,11 +163,11 @@ export default function TableSelectModal({
                         </div>
 
                         {!currentFloor || currentFloor.tables.length === 0 ? (
-                            <div className="text-center py-8 text-muted-foreground text-sm border rounded-xl border-dashed">
+                            <div className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
                                 No available tables found on this floor.
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                                 {currentFloor.tables.map((table) => {
                                     const isSelected =
                                         tempTable?.id === table.id;
@@ -181,9 +182,9 @@ export default function TableSelectModal({
                                                 })
                                             }
                                             className={cn(
-                                                'flex flex-col items-center justify-center p-4 rounded-xl border transition-all text-center select-none',
+                                                'flex flex-col items-center justify-center rounded-xl border p-4 text-center transition-all select-none',
                                                 isSelected
-                                                    ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary font-semibold shadow-sm'
+                                                    ? 'border-primary bg-primary/10 text-primary ring-primary font-semibold shadow-sm ring-2'
                                                     : 'border-border bg-card hover:bg-muted/40 text-foreground',
                                             )}
                                         >
@@ -204,7 +205,7 @@ export default function TableSelectModal({
                     </div>
                 </div>
 
-                <DialogFooter className="p-4 border-t bg-muted/20 shrink-0 flex sm:justify-between items-center gap-2">
+                <DialogFooter className="bg-muted/20 flex shrink-0 items-center gap-2 border-t p-4 sm:justify-between">
                     <Button type="button" variant="ghost" onClick={onClose}>
                         Cancel
                     </Button>

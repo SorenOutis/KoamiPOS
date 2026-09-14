@@ -59,9 +59,9 @@ export default function PaymentModal({
 
     // Split state
     const [splitLines, setSplitLines] = useState<SplitPaymentLine[]>([]);
-    const [splitMethod, setSplitMethod] = useState<
-        'cash' | 'card' | 'ewallet'
-    >('cash');
+    const [splitMethod, setSplitMethod] = useState<'cash' | 'card' | 'ewallet'>(
+        'cash',
+    );
     const [splitAmountInput, setSplitAmountInput] = useState('');
     const [splitTenderedInput, setSplitTenderedInput] = useState('');
 
@@ -113,7 +113,9 @@ export default function PaymentModal({
                 setTenderedInput((prev) => prev.slice(0, -1));
             } else if (key === '.') {
                 if (!tenderedInput.includes('.')) {
-                    setTenderedInput((prev) => (prev === '' ? '0.' : prev + '.'));
+                    setTenderedInput((prev) =>
+                        prev === '' ? '0.' : prev + '.',
+                    );
                 }
             } else {
                 setTenderedInput((prev) => {
@@ -199,34 +201,35 @@ export default function PaymentModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-2xl max-h-[95vh] flex flex-col p-0 overflow-hidden">
-                <DialogHeader className="p-5 border-b shrink-0">
+            <DialogContent className="flex max-h-[95vh] flex-col overflow-hidden p-0 sm:max-w-2xl">
+                <DialogHeader className="shrink-0 border-b p-5">
                     <div className="flex items-center justify-between">
                         <div>
                             <DialogTitle className="text-xl font-bold">
                                 Payment & Checkout
                             </DialogTitle>
-                            <p className="text-xs text-muted-foreground mt-0.5">
+                            <p className="text-muted-foreground mt-0.5 text-xs">
                                 Select payment tender or split the ticket
                             </p>
                         </div>
                         <div className="text-right">
-                            <span className="text-xs text-muted-foreground block font-medium">
+                            <span className="text-muted-foreground block text-xs font-medium">
                                 Total Due
                             </span>
-                            <span className="text-2xl font-black text-primary tabular-nums">
-                                {currencySymbol}{totalDue.toFixed(2)}
+                            <span className="text-primary text-2xl font-black tabular-nums">
+                                {currencySymbol}
+                                {totalDue.toFixed(2)}
                             </span>
                         </div>
                     </div>
 
                     {/* Mode Toggle: Single vs Split */}
-                    <div className="flex items-center rounded-xl bg-muted/60 p-1 border mt-3">
+                    <div className="bg-muted/60 mt-3 flex items-center rounded-xl border p-1">
                         <button
                             type="button"
                             onClick={() => setMode('single')}
                             className={cn(
-                                'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
+                                'flex-1 rounded-lg py-1.5 text-xs font-bold transition-all',
                                 mode === 'single'
                                     ? 'bg-background text-foreground shadow-xs'
                                     : 'text-muted-foreground hover:text-foreground',
@@ -240,11 +243,13 @@ export default function PaymentModal({
                                 setMode('split');
                                 setSplitAmountInput(splitRemaining.toFixed(2));
                                 if (splitMethod === 'cash') {
-                                    setSplitTenderedInput(splitRemaining.toFixed(2));
+                                    setSplitTenderedInput(
+                                        splitRemaining.toFixed(2),
+                                    );
                                 }
                             }}
                             className={cn(
-                                'flex-1 py-1.5 text-xs font-bold rounded-lg transition-all',
+                                'flex-1 rounded-lg py-1.5 text-xs font-bold transition-all',
                                 mode === 'split'
                                     ? 'bg-background text-foreground shadow-xs'
                                     : 'text-muted-foreground hover:text-foreground',
@@ -255,9 +260,9 @@ export default function PaymentModal({
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto p-5 space-y-5">
+                <div className="flex-1 space-y-5 overflow-y-auto p-5">
                     {errorMessage && (
-                        <div className="bg-destructive/10 border border-destructive/30 text-destructive text-sm p-3 rounded-xl">
+                        <div className="bg-destructive/10 border-destructive/30 text-destructive rounded-xl border p-3 text-sm">
                             {errorMessage}
                         </div>
                     )}
@@ -266,7 +271,7 @@ export default function PaymentModal({
                         <>
                             {/* Tender Method Selector */}
                             <div className="space-y-2">
-                                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                <Label className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                                     Payment Method
                                 </Label>
                                 <div className="grid grid-cols-3 gap-2.5">
@@ -274,13 +279,13 @@ export default function PaymentModal({
                                         type="button"
                                         onClick={() => setPaymentMethod('cash')}
                                         className={cn(
-                                            'flex flex-col items-center justify-center p-3.5 rounded-xl border transition-all text-center select-none',
+                                            'flex flex-col items-center justify-center rounded-xl border p-3.5 text-center transition-all select-none',
                                             paymentMethod === 'cash'
-                                                ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary font-bold shadow-xs'
+                                                ? 'border-primary bg-primary/10 text-primary ring-primary font-bold shadow-xs ring-2'
                                                 : 'border-border bg-card hover:bg-muted/40 text-foreground',
                                         )}
                                     >
-                                        <Banknote className="size-6 mb-1 text-emerald-600 dark:text-emerald-400" />
+                                        <Banknote className="mb-1 size-6 text-emerald-600 dark:text-emerald-400" />
                                         <span className="text-sm">Cash</span>
                                     </button>
 
@@ -288,28 +293,32 @@ export default function PaymentModal({
                                         type="button"
                                         onClick={() => setPaymentMethod('card')}
                                         className={cn(
-                                            'flex flex-col items-center justify-center p-3.5 rounded-xl border transition-all text-center select-none',
+                                            'flex flex-col items-center justify-center rounded-xl border p-3.5 text-center transition-all select-none',
                                             paymentMethod === 'card'
-                                                ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary font-bold shadow-xs'
+                                                ? 'border-primary bg-primary/10 text-primary ring-primary font-bold shadow-xs ring-2'
                                                 : 'border-border bg-card hover:bg-muted/40 text-foreground',
                                         )}
                                     >
-                                        <CreditCard className="size-6 mb-1 text-blue-600 dark:text-blue-400" />
+                                        <CreditCard className="mb-1 size-6 text-blue-600 dark:text-blue-400" />
                                         <span className="text-sm">Card</span>
                                     </button>
 
                                     <button
                                         type="button"
-                                        onClick={() => setPaymentMethod('ewallet')}
+                                        onClick={() =>
+                                            setPaymentMethod('ewallet')
+                                        }
                                         className={cn(
-                                            'flex flex-col items-center justify-center p-3.5 rounded-xl border transition-all text-center select-none',
+                                            'flex flex-col items-center justify-center rounded-xl border p-3.5 text-center transition-all select-none',
                                             paymentMethod === 'ewallet'
-                                                ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary font-bold shadow-xs'
+                                                ? 'border-primary bg-primary/10 text-primary ring-primary font-bold shadow-xs ring-2'
                                                 : 'border-border bg-card hover:bg-muted/40 text-foreground',
                                         )}
                                     >
-                                        <Wallet className="size-6 mb-1 text-purple-600 dark:text-purple-400" />
-                                        <span className="text-sm">E-Wallet</span>
+                                        <Wallet className="mb-1 size-6 text-purple-600 dark:text-purple-400" />
+                                        <span className="text-sm">
+                                            E-Wallet
+                                        </span>
                                     </button>
                                 </div>
                             </div>
@@ -318,26 +327,26 @@ export default function PaymentModal({
                             {paymentMethod === 'cash' ? (
                                 <div className="space-y-4">
                                     {/* Display Box */}
-                                    <div className="grid grid-cols-2 gap-3 bg-muted/30 p-3.5 rounded-2xl border">
+                                    <div className="bg-muted/30 grid grid-cols-2 gap-3 rounded-2xl border p-3.5">
                                         <div>
-                                            <span className="text-xs text-muted-foreground font-semibold block">
+                                            <span className="text-muted-foreground block text-xs font-semibold">
                                                 Cash Tendered
                                             </span>
-                                            <div className="flex items-baseline gap-1 mt-1">
-                                                <span className="text-lg font-bold text-muted-foreground">
+                                            <div className="mt-1 flex items-baseline gap-1">
+                                                <span className="text-muted-foreground text-lg font-bold">
                                                     {currencySymbol}
                                                 </span>
-                                                <span className="text-2xl font-black text-foreground tabular-nums">
+                                                <span className="text-foreground text-2xl font-black tabular-nums">
                                                     {tenderedInput || '0.00'}
                                                 </span>
                                             </div>
                                         </div>
 
                                         <div className="text-right">
-                                            <span className="text-xs text-muted-foreground font-semibold block">
+                                            <span className="text-muted-foreground block text-xs font-semibold">
                                                 Change Due
                                             </span>
-                                            <div className="flex items-baseline justify-end gap-1 mt-1">
+                                            <div className="mt-1 flex items-baseline justify-end gap-1">
                                                 <span className="text-lg font-bold text-emerald-600">
                                                     {currencySymbol}
                                                 </span>
@@ -350,67 +359,88 @@ export default function PaymentModal({
 
                                     {/* Quick Cash Presets */}
                                     <div className="space-y-1.5">
-                                        <Label className="text-xs text-muted-foreground font-semibold">
+                                        <Label className="text-muted-foreground text-xs font-semibold">
                                             Quick Cash
                                         </Label>
                                         <div className="grid grid-cols-4 gap-2">
-                                            {quickCashPresets.map((amount, idx) => (
-                                                <button
-                                                    key={`${amount}-${idx}`}
-                                                    type="button"
-                                                    onClick={() =>
-                                                        setTenderedInput(amount.toFixed(2))
-                                                    }
-                                                    className="py-2.5 px-1 bg-muted/60 hover:bg-muted text-foreground font-bold text-sm rounded-xl border transition-all text-center tabular-nums"
-                                                >
-                                                    {idx === 0
-                                                        ? 'Exact'
-                                                        : `${currencySymbol}${amount.toFixed(0)}`}
-                                                </button>
-                                            ))}
+                                            {quickCashPresets.map(
+                                                (amount, idx) => (
+                                                    <button
+                                                        key={`${amount}-${idx}`}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setTenderedInput(
+                                                                amount.toFixed(
+                                                                    2,
+                                                                ),
+                                                            )
+                                                        }
+                                                        className="bg-muted/60 hover:bg-muted text-foreground rounded-xl border px-1 py-2.5 text-center text-sm font-bold tabular-nums transition-all"
+                                                    >
+                                                        {idx === 0
+                                                            ? 'Exact'
+                                                            : `${currencySymbol}${amount.toFixed(0)}`}
+                                                    </button>
+                                                ),
+                                            )}
                                         </div>
                                     </div>
 
                                     {/* Touch Numpad */}
                                     <div className="grid grid-cols-3 gap-2">
-                                        {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', 'backspace'].map(
-                                            (key) => (
-                                                <button
-                                                    key={key}
-                                                    type="button"
-                                                    onClick={() => handleNumpad(key)}
-                                                    className={cn(
-                                                        'h-12 rounded-xl text-lg font-bold border transition-all flex items-center justify-center select-none active:scale-[0.97]',
-                                                        key === 'C'
-                                                            ? 'bg-destructive/10 text-destructive border-destructive/30 hover:bg-destructive/20'
-                                                            : key === 'backspace'
-                                                              ? 'bg-muted/60 text-foreground hover:bg-muted'
-                                                              : 'bg-card text-foreground hover:bg-muted/50',
-                                                    )}
-                                                >
-                                                    {key === 'backspace' ? (
-                                                        <Delete className="size-5" />
-                                                    ) : (
-                                                        key
-                                                    )}
-                                                </button>
-                                            ),
-                                        )}
+                                        {[
+                                            '1',
+                                            '2',
+                                            '3',
+                                            '4',
+                                            '5',
+                                            '6',
+                                            '7',
+                                            '8',
+                                            '9',
+                                            'C',
+                                            '0',
+                                            'backspace',
+                                        ].map((key) => (
+                                            <button
+                                                key={key}
+                                                type="button"
+                                                onClick={() =>
+                                                    handleNumpad(key)
+                                                }
+                                                className={cn(
+                                                    'flex h-12 items-center justify-center rounded-xl border text-lg font-bold transition-all select-none active:scale-[0.97]',
+                                                    key === 'C'
+                                                        ? 'bg-destructive/10 text-destructive border-destructive/30 hover:bg-destructive/20'
+                                                        : key === 'backspace'
+                                                          ? 'bg-muted/60 text-foreground hover:bg-muted'
+                                                          : 'bg-card text-foreground hover:bg-muted/50',
+                                                )}
+                                            >
+                                                {key === 'backspace' ? (
+                                                    <Delete className="size-5" />
+                                                ) : (
+                                                    key
+                                                )}
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             ) : (
                                 <div className="space-y-4 py-4">
-                                    <div className="bg-muted/30 p-5 rounded-2xl border text-center space-y-2">
-                                        <div className="size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                                    <div className="bg-muted/30 space-y-2 rounded-2xl border p-5 text-center">
+                                        <div className="bg-primary/10 text-primary mx-auto flex size-12 items-center justify-center rounded-full">
                                             <Check className="size-6 stroke-[3]" />
                                         </div>
-                                        <h4 className="font-bold text-base text-foreground">
+                                        <h4 className="text-foreground text-base font-bold">
                                             {paymentMethod === 'card'
                                                 ? 'Card Terminal Ready'
                                                 : 'E-Wallet QR Scanned'}
                                         </h4>
-                                        <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                                            Tap Complete Sale once the external payment is confirmed by the terminal or customer app.
+                                        <p className="text-muted-foreground mx-auto max-w-sm text-xs">
+                                            Tap Complete Sale once the external
+                                            payment is confirmed by the terminal
+                                            or customer app.
                                         </p>
                                     </div>
 
@@ -420,7 +450,9 @@ export default function PaymentModal({
                                         </Label>
                                         <Input
                                             value={cardReference}
-                                            onChange={(e) => setCardReference(e.target.value)}
+                                            onChange={(e) =>
+                                                setCardReference(e.target.value)
+                                            }
                                             placeholder="e.g. AUTH-98241 or Trace #"
                                             className="h-10 text-sm"
                                         />
@@ -432,46 +464,69 @@ export default function PaymentModal({
                         /* Split Bill Mode */
                         <div className="space-y-5">
                             {/* Split Ledger */}
-                            <div className="bg-muted/30 p-3.5 rounded-2xl border space-y-2">
+                            <div className="bg-muted/30 space-y-2 rounded-2xl border p-3.5">
                                 <div className="flex justify-between text-xs font-semibold">
-                                    <span className="text-muted-foreground">Paid so far</span>
-                                    <span className="tabular-nums text-foreground">
-                                        {currencySymbol}{splitPaid.toFixed(2)} of {currencySymbol}{totalDue.toFixed(2)}
+                                    <span className="text-muted-foreground">
+                                        Paid so far
+                                    </span>
+                                    <span className="text-foreground tabular-nums">
+                                        {currencySymbol}
+                                        {splitPaid.toFixed(2)} of{' '}
+                                        {currencySymbol}
+                                        {totalDue.toFixed(2)}
                                     </span>
                                 </div>
 
-                                <div className="flex justify-between items-baseline pt-1 border-t text-sm font-bold">
-                                    <span className="text-muted-foreground">Still Due</span>
-                                    <span className="tabular-nums text-primary text-base">
-                                        {currencySymbol}{splitRemaining.toFixed(2)}
+                                <div className="flex items-baseline justify-between border-t pt-1 text-sm font-bold">
+                                    <span className="text-muted-foreground">
+                                        Still Due
+                                    </span>
+                                    <span className="text-primary text-base tabular-nums">
+                                        {currencySymbol}
+                                        {splitRemaining.toFixed(2)}
                                     </span>
                                 </div>
 
                                 {splitLines.length > 0 && (
-                                    <div className="space-y-1.5 pt-2 border-t">
+                                    <div className="space-y-1.5 border-t pt-2">
                                         {splitLines.map((line, idx) => (
                                             <div
                                                 key={idx}
-                                                className="flex items-center justify-between text-xs bg-background p-2 rounded-lg border"
+                                                className="bg-background flex items-center justify-between rounded-lg border p-2 text-xs"
                                             >
                                                 <div className="flex items-center gap-1.5">
-                                                    <Badge variant="outline" className="text-[10px] capitalize">
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="text-[10px] capitalize"
+                                                    >
                                                         {line.method}
                                                     </Badge>
                                                     <span className="font-bold tabular-nums">
-                                                        {currencySymbol}{line.amount.toFixed(2)}
+                                                        {currencySymbol}
+                                                        {line.amount.toFixed(2)}
                                                     </span>
-                                                    {line.tendered && line.tendered > line.amount && (
-                                                        <span className="text-muted-foreground text-[10px]">
-                                                            (Change: {currencySymbol}{(line.tendered - line.amount).toFixed(2)})
-                                                        </span>
-                                                    )}
+                                                    {line.tendered &&
+                                                        line.tendered >
+                                                            line.amount && (
+                                                            <span className="text-muted-foreground text-[10px]">
+                                                                (Change:{' '}
+                                                                {currencySymbol}
+                                                                {(
+                                                                    line.tendered -
+                                                                    line.amount
+                                                                ).toFixed(2)}
+                                                                )
+                                                            </span>
+                                                        )}
                                                 </div>
                                                 <button
                                                     type="button"
                                                     onClick={() =>
                                                         setSplitLines((prev) =>
-                                                            prev.filter((_, i) => i !== idx),
+                                                            prev.filter(
+                                                                (_, i) =>
+                                                                    i !== idx,
+                                                            ),
                                                         )
                                                     }
                                                     className="text-muted-foreground hover:text-destructive p-1"
@@ -487,7 +542,7 @@ export default function PaymentModal({
                             {/* Split Presets (Equal Split) */}
                             {splitRemaining > 0.005 && (
                                 <div className="space-y-1.5">
-                                    <Label className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
+                                    <Label className="text-muted-foreground flex items-center gap-1 text-xs font-semibold">
                                         <Users className="size-3.5" />
                                         Split Evenly By Guests
                                     </Label>
@@ -496,10 +551,13 @@ export default function PaymentModal({
                                             <button
                                                 key={count}
                                                 type="button"
-                                                onClick={() => handleEqualSplit(count)}
-                                                className="py-1.5 text-xs font-semibold bg-muted/60 hover:bg-muted text-foreground rounded-lg border"
+                                                onClick={() =>
+                                                    handleEqualSplit(count)
+                                                }
+                                                className="bg-muted/60 hover:bg-muted text-foreground rounded-lg border py-1.5 text-xs font-semibold"
                                             >
-                                                {count} Ways ({currencySymbol}{(totalDue / count).toFixed(2)})
+                                                {count} Ways ({currencySymbol}
+                                                {(totalDue / count).toFixed(2)})
                                             </button>
                                         ))}
                                     </div>
@@ -508,20 +566,24 @@ export default function PaymentModal({
 
                             {/* Add Split Line Form */}
                             {splitRemaining > 0.005 && (
-                                <div className="p-3.5 rounded-2xl border space-y-3 bg-card">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                <div className="bg-card space-y-3 rounded-2xl border p-3.5">
+                                    <Label className="text-muted-foreground text-xs font-bold tracking-wider uppercase">
                                         Add Payment Line
                                     </Label>
 
                                     {/* Split Tender Selector */}
                                     <div className="grid grid-cols-3 gap-2">
-                                        {(['cash', 'card', 'ewallet'] as const).map((m) => (
+                                        {(
+                                            ['cash', 'card', 'ewallet'] as const
+                                        ).map((m) => (
                                             <button
                                                 key={m}
                                                 type="button"
-                                                onClick={() => setSplitMethod(m)}
+                                                onClick={() =>
+                                                    setSplitMethod(m)
+                                                }
                                                 className={cn(
-                                                    'py-2 text-xs font-bold rounded-lg border capitalize transition-all',
+                                                    'rounded-lg border py-2 text-xs font-bold capitalize transition-all',
                                                     splitMethod === m
                                                         ? 'bg-primary text-primary-foreground border-primary'
                                                         : 'bg-muted/40 text-muted-foreground hover:bg-muted',
@@ -534,30 +596,45 @@ export default function PaymentModal({
 
                                     <div className="grid grid-cols-2 gap-2">
                                         <div>
-                                            <Label className="text-[11px] text-muted-foreground">
+                                            <Label className="text-muted-foreground text-[11px]">
                                                 Amount to Charge
                                             </Label>
                                             <Input
                                                 type="number"
                                                 step="0.01"
                                                 value={splitAmountInput}
-                                                onChange={(e) => setSplitAmountInput(e.target.value)}
-                                                placeholder={splitRemaining.toFixed(2)}
+                                                onChange={(e) =>
+                                                    setSplitAmountInput(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                placeholder={splitRemaining.toFixed(
+                                                    2,
+                                                )}
                                                 className="h-9 text-sm tabular-nums"
                                             />
                                         </div>
 
                                         {splitMethod === 'cash' && (
                                             <div>
-                                                <Label className="text-[11px] text-muted-foreground">
+                                                <Label className="text-muted-foreground text-[11px]">
                                                     Cash Tendered
                                                 </Label>
                                                 <Input
                                                     type="number"
                                                     step="0.01"
                                                     value={splitTenderedInput}
-                                                    onChange={(e) => setSplitTenderedInput(e.target.value)}
-                                                    placeholder={splitAmountInput || splitRemaining.toFixed(2)}
+                                                    onChange={(e) =>
+                                                        setSplitTenderedInput(
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder={
+                                                        splitAmountInput ||
+                                                        splitRemaining.toFixed(
+                                                            2,
+                                                        )
+                                                    }
                                                     className="h-9 text-sm tabular-nums"
                                                 />
                                             </div>
@@ -568,7 +645,7 @@ export default function PaymentModal({
                                         type="button"
                                         variant="secondary"
                                         onClick={addSplitPayment}
-                                        className="w-full h-9 text-xs font-bold"
+                                        className="h-9 w-full text-xs font-bold"
                                     >
                                         + Add Payment Line
                                     </Button>
@@ -578,8 +655,13 @@ export default function PaymentModal({
                     )}
                 </div>
 
-                <DialogFooter className="p-4 border-t bg-muted/20 shrink-0 flex sm:justify-between items-center gap-3">
-                    <Button type="button" variant="ghost" onClick={onClose} disabled={isProcessing}>
+                <DialogFooter className="bg-muted/20 flex shrink-0 items-center gap-3 border-t p-4 sm:justify-between">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={onClose}
+                        disabled={isProcessing}
+                    >
                         Cancel
                     </Button>
                     <Button
@@ -590,7 +672,7 @@ export default function PaymentModal({
                             (mode === 'single' && !isSingleCashValid) ||
                             (mode === 'split' && splitRemaining > 0.005)
                         }
-                        className="h-12 px-8 text-base font-bold shadow-md gap-2"
+                        className="h-12 gap-2 px-8 text-base font-bold shadow-md"
                     >
                         {isProcessing ? 'Processing Sale...' : 'Complete Sale'}
                     </Button>

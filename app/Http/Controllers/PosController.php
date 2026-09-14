@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\BusinessType;
 use App\Models\Category;
+use App\Models\DiningTable;
 use App\Models\Discount;
 use App\Models\Floor;
+use App\Models\Modifier;
+use App\Models\ModifierOption;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,7 +21,7 @@ class PosController extends Controller
         $user->loadMissing('workspace');
         $workspace = $user->workspace;
 
-        $tables = $workspace?->hasFeature('has_tables')
+        $tables = $workspace !== null && $workspace->hasFeature('has_tables')
             ? Floor::forWorkspace($workspace)
                 ->with(['tables' => fn ($query) => $query
                     ->where('status', 'free')
@@ -30,7 +32,7 @@ class PosController extends Controller
                 ->map(fn (Floor $floor): array => [
                     'id' => $floor->id,
                     'name' => $floor->name,
-                    'tables' => $floor->tables->map(fn ($table): array => [
+                    'tables' => $floor->tables->map(fn (DiningTable $table): array => [
                         'id' => $table->id,
                         'name' => $table->name,
                         'seats' => $table->seats,
@@ -61,13 +63,13 @@ class PosController extends Controller
                         'id' => $product->category->id,
                         'name' => $product->category->name,
                     ] : null,
-                    'modifiers' => $product->modifiers->map(fn ($modifier): array => [
+                    'modifiers' => $product->modifiers->map(fn (Modifier $modifier): array => [
                         'id' => $modifier->id,
                         'name' => $modifier->name,
                         'is_required' => $modifier->is_required,
                         'min_selections' => $modifier->min_selections,
                         'max_selections' => $modifier->max_selections,
-                        'options' => $modifier->options->map(fn ($option): array => [
+                        'options' => $modifier->options->map(fn (ModifierOption $option): array => [
                             'id' => $option->id,
                             'name' => $option->name,
                             'price_delta' => (float) $option->price_delta,
@@ -96,13 +98,9 @@ class PosController extends Controller
                 ->get(['id', 'name', 'code', 'type', 'value', 'min_subtotal'])
             : collect();
 
-        $businessTypeValue = $workspace?->business_type instanceof BusinessType
-            ? $workspace->business_type->value
-            : ($workspace?->business_type ?? 'restaurant');
+        $businessTypeValue = $workspace?->business_type->value ?? 'restaurant';
 
-        $defaultFeatures = $workspace?->business_type instanceof BusinessType
-            ? $workspace->business_type->defaultFeatures()
-            : (BusinessType::tryFrom((string) $workspace?->business_type)?->defaultFeatures() ?? []);
+        $defaultFeatures = $workspace?->business_type?->defaultFeatures() ?? [];
 
         return Inertia::render('pos/index', [
             'workspace' => $workspace ? [
@@ -121,7 +119,7 @@ class PosController extends Controller
                 'receipt_header' => $workspace->receipt_header,
                 'receipt_footer' => $workspace->receipt_footer,
                 'receipt_printer_type' => $workspace->receipt_printer_type ?? 'browser',
-                'settings' => $workspace->settings ?? $defaultFeatures,
+                'settings' => is_array($workspace->settings) ? $workspace->settings : $defaultFeatures,
             ] : null,
             'cashier' => [
                 'id' => $user->id,

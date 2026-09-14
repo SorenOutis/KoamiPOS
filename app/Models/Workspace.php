@@ -138,11 +138,7 @@ class Workspace extends Model
 
     public function isHospitality(): bool
     {
-        if ($this->business_type instanceof BusinessType) {
-            return $this->business_type->isHospitality();
-        }
-
-        return in_array($this->business_type, ['restaurant', 'cafe'], true);
+        return $this->business_type instanceof BusinessType && $this->business_type->isHospitality();
     }
 
     public function hasFeature(string $feature): bool
@@ -157,9 +153,7 @@ class Workspace extends Model
             return $this->business_type->defaultFeatures()[$feature] ?? false;
         }
 
-        $type = BusinessType::tryFrom((string) $this->business_type);
-
-        return $type ? ($type->defaultFeatures()[$feature] ?? false) : false;
+        return false;
     }
 
     /**

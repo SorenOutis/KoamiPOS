@@ -50,10 +50,10 @@ class CreateWorkspace extends CreateRecord
 
         unset($data['admin_name'], $data['admin_email'], $data['admin_password']);
 
-        /** @var Workspace $workspace */
         $businessType = BusinessType::tryFrom((string) ($data['business_type'] ?? 'restaurant')) ?? BusinessType::Restaurant;
         $data['business_type'] = $businessType;
-        $workspace = static::getModel()::create($data);
+        $workspace = new Workspace($data);
+        $workspace->save();
         app(PresetManager::class)->applyPreset($workspace, $businessType, save: true);
 
         User::create([

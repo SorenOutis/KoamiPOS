@@ -47,39 +47,45 @@ export default function PosHeader({
     onOpenHeldOrders,
 }: Props) {
     return (
-        <header className="flex flex-wrap items-center justify-between gap-3 bg-card border-b px-4 py-2.5 shrink-0 select-none shadow-xs">
+        <header className="bg-card flex shrink-0 flex-wrap items-center justify-between gap-3 border-b px-4 py-2.5 shadow-xs select-none">
             {/* Left: Workspace & Cashier identity */}
             <div className="flex items-center gap-3">
                 <LetterFallbackImage
                     src={workspace?.logo_url ?? null}
                     alt={workspace?.name ?? 'KoamiPOS'}
                     size={38}
-                    className="rounded-xl shrink-0 border shadow-xs"
+                    className="shrink-0 rounded-xl border shadow-xs"
                     fallbackClassName="font-bold text-sm bg-primary text-primary-foreground"
                 />
                 <div className="leading-tight">
                     <div className="flex items-center gap-2">
-                        <span className="font-bold text-base tracking-tight text-foreground">
+                        <span className="text-foreground text-base font-bold tracking-tight">
                             {workspace?.name ?? 'KoamiPOS'}
                         </span>
-                        <Badge variant="outline" className="text-[10px] uppercase font-mono px-1.5 py-0">
+                        <Badge
+                            variant="outline"
+                            className="px-1.5 py-0 font-mono text-[10px] uppercase"
+                        >
                             {workspace?.business_type ?? 'POS'}
                         </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                        Cashier: <span className="font-medium text-foreground">{cashier.name}</span>
+                    <p className="text-muted-foreground text-xs">
+                        Cashier:{' '}
+                        <span className="text-foreground font-medium">
+                            {cashier.name}
+                        </span>
                     </p>
                 </div>
             </div>
 
             {/* Center: Order Type Toggle & Table Picker */}
-            <div className="flex items-center gap-2 flex-wrap">
-                <div className="flex items-center rounded-xl bg-muted/60 p-1 border">
+            <div className="flex flex-wrap items-center gap-2">
+                <div className="bg-muted/60 flex items-center rounded-xl border p-1">
                     <button
                         type="button"
                         onClick={() => onOrderTypeChange('dine_in')}
                         className={cn(
-                            'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
+                            'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all',
                             orderType === 'dine_in'
                                 ? 'bg-background text-foreground shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground',
@@ -92,7 +98,7 @@ export default function PosHeader({
                         type="button"
                         onClick={() => onOrderTypeChange('takeaway')}
                         className={cn(
-                            'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all',
+                            'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all',
                             orderType === 'takeaway'
                                 ? 'bg-background text-foreground shadow-xs'
                                 : 'text-muted-foreground hover:text-foreground',
@@ -110,8 +116,9 @@ export default function PosHeader({
                         size="sm"
                         onClick={onOpenTablePicker}
                         className={cn(
-                            'h-8 text-xs font-semibold rounded-xl gap-1.5',
-                            !selectedTable && 'border-dashed border-primary/50 text-primary',
+                            'h-8 gap-1.5 rounded-xl text-xs font-semibold',
+                            !selectedTable &&
+                                'border-primary/50 text-primary border-dashed',
                         )}
                     >
                         <UtensilsCrossed className="size-3.5" />
@@ -129,12 +136,12 @@ export default function PosHeader({
                     variant="outline"
                     size="sm"
                     onClick={onOpenHeldOrders}
-                    className="h-8 text-xs font-medium rounded-xl gap-1.5 relative"
+                    className="relative h-8 gap-1.5 rounded-xl text-xs font-medium"
                 >
-                    <PauseCircle className="size-3.5 text-muted-foreground" />
+                    <PauseCircle className="text-muted-foreground size-3.5" />
                     <span>Held</span>
                     {heldCount > 0 && (
-                        <Badge className="size-4 p-0 flex items-center justify-center rounded-full text-[9px] font-bold bg-amber-500 text-white ml-0.5">
+                        <Badge className="ml-0.5 flex size-4 items-center justify-center rounded-full bg-amber-500 p-0 text-[9px] font-bold text-white">
                             {heldCount}
                         </Badge>
                     )}
@@ -145,7 +152,7 @@ export default function PosHeader({
                         asChild
                         variant="ghost"
                         size="sm"
-                        className="h-8 text-xs rounded-xl gap-1 text-muted-foreground hover:text-foreground hidden md:inline-flex"
+                        className="text-muted-foreground hover:text-foreground hidden h-8 gap-1 rounded-xl text-xs md:inline-flex"
                     >
                         <Link href="/pos/tables">
                             <LayoutGrid className="size-3.5" />
@@ -159,7 +166,7 @@ export default function PosHeader({
                         asChild
                         variant="ghost"
                         size="sm"
-                        className="h-8 text-xs rounded-xl gap-1 text-muted-foreground hover:text-foreground hidden md:inline-flex"
+                        className="text-muted-foreground hover:text-foreground hidden h-8 gap-1 rounded-xl text-xs md:inline-flex"
                     >
                         <Link href="/pos/kds">
                             <ChefHat className="size-3.5" />
@@ -172,7 +179,7 @@ export default function PosHeader({
                     asChild
                     variant="ghost"
                     size="sm"
-                    className="h-8 text-xs rounded-xl gap-1 text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground h-8 gap-1 rounded-xl text-xs"
                 >
                     <Link href="/pos/sales">
                         <History className="size-3.5" />
