@@ -24,6 +24,9 @@ class PosSalesController extends Controller
             'workspace' => $user->workspace ? [
                 'id' => $user->workspace->id,
                 'name' => $user->workspace->name,
+                'currency_symbol' => $user->workspace->currency_symbol,
+                'tax_rate' => (float) $user->workspace->tax_rate,
+                'tax_inclusive' => (bool) $user->workspace->tax_inclusive,
             ] : null,
             'orders' => $orders,
         ]);
@@ -42,6 +45,9 @@ class PosSalesController extends Controller
             'workspace' => $user->workspace ? [
                 'id' => $user->workspace->id,
                 'name' => $user->workspace->name,
+                'currency_symbol' => $user->workspace->currency_symbol,
+                'tax_rate' => (float) $user->workspace->tax_rate,
+                'tax_inclusive' => (bool) $user->workspace->tax_inclusive,
             ] : null,
         ]);
     }

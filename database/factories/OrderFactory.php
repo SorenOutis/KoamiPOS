@@ -24,9 +24,15 @@ class OrderFactory extends Factory
             'subtotal' => $subtotal,
             'discount' => $discount,
             'tax' => $tax,
+            'service_charge' => 0,
             'total' => round($subtotal - $discount + $tax, 2),
             'payment_method' => fake()->randomElement(['cash', 'card', 'ewallet']),
             'status' => 'completed',
+            'order_type' => 'takeaway',
+            'table_id' => null,
+            'guest_count' => 1,
+            'kds_status' => 'served',
+            'kitchen_notes' => null,
         ];
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Requests\Pos;
 use App\Enums\OrderStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreOrderRequest extends FormRequest
 {
@@ -12,7 +13,7 @@ class StoreOrderRequest extends FormRequest
     {
         $user = $this->user();
 
-        return $user && $user->isCashier() && $user->workspace_id !== null;
+        return $user && $user->canAccessPos();
     }
 
     /**
@@ -30,6 +31,22 @@ class StoreOrderRequest extends FormRequest
             'discount_code' => ['nullable', 'string', 'max:50'],
             'status' => ['required', 'string', 'in:'.implode(',', array_column(OrderStatus::cases(), 'value'))],
             'tendered_amount' => ['nullable', 'numeric', 'min:0'],
+            'order_type' => ['sometimes', 'string', 'in:dine_in,takeaway,delivery'],
+            'table_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('dining_tables', 'id')->where('workspace_id', $this->user()?->workspace_id),
+            ],
+            'guest_count' => ['sometimes', 'integer', 'min:1', 'max:999'],
+            'kitchen_notes' => ['nullable', 'string', 'max:2000'],
+            'items.*.prep_notes' => ['nullable', 'string', 'max:1000'],
+            'items.*.modifiers' => ['sometimes', 'array', 'max:50'],
+            'items.*.modifiers.*.modifier_option_id' => [
+                'required',
+                'integer',
+                'distinct',
+                Rule::exists('modifier_options', 'id'),
+            ],
         ];
     }
 

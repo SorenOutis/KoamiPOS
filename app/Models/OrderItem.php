@@ -6,6 +6,7 @@ use Database\Factories\OrderItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrderItem extends Model
 {
@@ -19,6 +20,8 @@ class OrderItem extends Model
         'unit_price',
         'quantity',
         'total',
+        'kds_status',
+        'prep_notes',
     ];
 
     /**
@@ -47,6 +50,14 @@ class OrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * @return HasMany<OrderItemModifier, $this>
+     */
+    public function itemModifiers(): HasMany
+    {
+        return $this->hasMany(OrderItemModifier::class);
     }
 
     public function releaseStock(): void

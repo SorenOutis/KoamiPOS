@@ -9,6 +9,8 @@ type OrderItem = {
     unit_price: string | number;
     quantity: number;
     total: string | number;
+    prep_notes?: string | null;
+    modifiers?: { id: number; name: string; price: string | number }[];
 };
 
 type OrderPayment = {
@@ -24,6 +26,7 @@ type Order = {
     subtotal: string | number;
     discount: string | number;
     tax: string | number;
+    service_charge?: string | number;
     total: string | number;
     payment_method: string;
     status: string;
@@ -35,11 +38,20 @@ type Order = {
     payments?: OrderPayment[] | null;
     cashier?: { id: number; name: string; email: string } | null;
     workspace?: { id: number; name: string } | null;
+    order_type?: string;
+    guest_count?: number;
+    table?: { id: number; name: string } | null;
 };
 
 type Props = {
     order: Order;
-    workspace: { id: number; name: string } | null;
+    workspace: {
+        id: number;
+        name: string;
+        currency_symbol?: string;
+        tax_rate?: number;
+        tax_inclusive?: boolean;
+    } | null;
 };
 
 function paymentLabel(method: string) {
@@ -68,13 +80,13 @@ function paymentSummary(
 
         if (changeDue > 0.005) {
             return {
-                received: `Cash ${formatMoney(tendered)} received`,
-                change: `Change ${formatMoney(changeDue)}`,
+                received: `Cash ${formatMoney(tendered, '₱')} received`,
+                change: `Change ${formatMoney(changeDue, '₱')}`,
             };
         }
 
         return {
-            received: `Cash ${formatMoney(tendered)} received`,
+            received: `Cash ${formatMoney(tendered, '₱')} received`,
             change: 'Exact amount',
         };
     }
@@ -92,8 +104,8 @@ function paymentSummary(
     };
 }
 
-function formatMoney(value: number) {
-    return `₱${value.toFixed(2)}`;
+function formatMoney(value: number, currencySymbol: string) {
+    return `${currencySymbol}${value.toFixed(2)}`;
 }
 
 function formatPhTime(iso: string | null) {
@@ -113,6 +125,8 @@ function formatTimeOnly(iso: string | null) {
 }
 
 export default function PosSalesShow({ order, workspace }: Props) {
+    const currencySymbol = workspace?.currency_symbol ?? '₱';
+    const serviceCharge = Number(order.service_charge ?? 0);
     const createdLabel = formatPhTime(order.created_at) ?? 'Unknown date';
 
     const completedLabel = formatTimeOnly(order.completed_at);
@@ -207,7 +221,7 @@ export default function PosSalesShow({ order, workspace }: Props) {
                                             </span>
                                         </span>
                                         <span className="tabular-nums">
-                                            {formatMoney(Number(item.total))}
+                                            {formatMoney(Number(item.total), currencySymbol)}
                                         </span>
                                     </div>
                                 ))}
@@ -221,7 +235,7 @@ export default function PosSalesShow({ order, workspace }: Props) {
                                 Subtotal
                             </span>
                             <span className="tabular-nums">
-                                {formatMoney(Number(order.subtotal))}
+                                {formatMoney(Number(order.subtotal), currencySymbol)}
                             </span>
                         </div>
                         <div className="flex justify-between">
@@ -229,21 +243,31 @@ export default function PosSalesShow({ order, workspace }: Props) {
                                 Discount
                             </span>
                             <span className="tabular-nums">
-                                −{formatMoney(Number(order.discount))}
+                                −{formatMoney(Number(order.discount), currencySymbol)}
                             </span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">
-                                Tax (12%)
+                                Tax ({workspace?.tax_rate ?? 12}%{workspace?.tax_inclusive ? ' incl.' : ''})
                             </span>
                             <span className="tabular-nums">
-                                {formatMoney(Number(order.tax))}
+                                {formatMoney(Number(order.tax), currencySymbol)}
                             </span>
                         </div>
+                        {serviceCharge > 0 && (
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                    Service charge
+                                </span>
+                                <span className="tabular-nums">
+                                    {formatMoney(serviceCharge, currencySymbol)}
+                                </span>
+                            </div>
+                        )}
                         <div className="flex justify-between border-t pt-1 text-base font-semibold">
                             <span>Total</span>
                             <span className="tabular-nums">
-                                {formatMoney(Number(order.total))}
+                                {formatMoney(Number(order.total), currencySymbol)}
                             </span>
                         </div>
 
@@ -274,12 +298,13 @@ export default function PosSalesShow({ order, workspace }: Props) {
                                             <span className="tabular-nums">
                                                 {formatMoney(
                                                     Number(paymentLine.amount),
+                                                    currencySymbol,
                                                 )}
                                             </span>
                                         </p>
                                     ))}
                                     {storedChange > 0.005 && (
-                                        <p className="text-muted-foreground">{`Change ${formatMoney(storedChange)}`}</p>
+                                        <p className="text-muted-foreground">{`Change ${formatMoney(storedChange, currencySymbol)}`}</p>
                                     )}
                                 </>
                             ) : (

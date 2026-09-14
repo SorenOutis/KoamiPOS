@@ -79,6 +79,11 @@ class User extends Authenticatable implements FilamentUser, PasskeyUser
         return $this->role === UserRole::Cashier;
     }
 
+    public function canAccessPos(): bool
+    {
+        return ($this->isCashier() || $this->isAdmin()) && $this->workspace_id !== null;
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         if ($this->isSuperAdmin()) {

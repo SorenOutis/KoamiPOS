@@ -29,6 +29,8 @@ class OrderItemFactory extends Factory
             'unit_price' => $unitPrice,
             'quantity' => $quantity,
             'total' => round($unitPrice * $quantity, 2),
+            'kds_status' => 'served',
+            'prep_notes' => null,
         ];
     }
 }
