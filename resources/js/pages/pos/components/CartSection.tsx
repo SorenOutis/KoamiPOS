@@ -11,7 +11,7 @@ import {
     PauseCircle,
     Plus,
     RotateCcw,
-    ShoppingBag,
+    ShoppingCart,
     Tag,
     Trash2,
 } from 'lucide-react';
@@ -96,13 +96,13 @@ export default function CartSection({
     );
 
     return (
-        <div className="bg-card flex h-full min-h-0 flex-col overflow-hidden border-l select-none">
+        <div className="bg-card text-card-foreground border-border/60 flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-3xl border shadow-sm select-none">
             {/* Cart Header */}
-            <div className="bg-card shrink-0 space-y-2 border-b p-3.5">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+            <div className="bg-card border-border/60 max-h-[30%] shrink-0 space-y-1 overflow-y-auto border-b px-4 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-x-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <span className="text-foreground text-base font-bold tracking-tight">
-                            Order Cart
+                            New Order
                         </span>
                         <Badge
                             variant="secondary"
@@ -119,11 +119,11 @@ export default function CartSection({
                             variant="ghost"
                             onClick={onVoidLast}
                             disabled={items.length === 0}
-                            className="text-muted-foreground hover:text-foreground h-8 px-2 text-xs"
+                            className="text-muted-foreground hover:text-foreground size-11 rounded-xl p-0"
                             title="Void last item"
+                            aria-label="Void last item"
                         >
-                            <RotateCcw className="mr-1 size-3.5" />
-                            Void
+                            <RotateCcw className="size-4" />
                         </Button>
                         <Button
                             type="button"
@@ -131,18 +131,18 @@ export default function CartSection({
                             variant="ghost"
                             onClick={onClearCart}
                             disabled={items.length === 0}
-                            className="text-muted-foreground hover:text-destructive h-8 px-2 text-xs"
+                            className="text-muted-foreground hover:text-destructive size-11 rounded-xl p-0"
                             title="Clear cart"
+                            aria-label="Clear cart"
                         >
-                            <Trash2 className="mr-1 size-3.5" />
-                            Clear
+                            <Trash2 className="size-4" />
                         </Button>
                     </div>
                 </div>
 
                 {/* Table & Order Type Bar */}
-                <div className="text-muted-foreground bg-muted/40 flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs">
-                    <div className="flex items-center gap-1.5 font-medium">
+                <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-x-2 text-xs">
+                    <div className="flex min-w-0 flex-wrap items-center gap-1.5 font-medium break-words">
                         <span className="capitalize">
                             {orderType.replace('_', ' ')}
                         </span>
@@ -159,7 +159,7 @@ export default function CartSection({
                         <button
                             type="button"
                             onClick={onHoldOrder}
-                            className="text-primary inline-flex items-center gap-1 font-semibold hover:underline"
+                            className="text-primary hover:bg-primary/5 focus-visible:outline-ring inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 font-semibold focus-visible:outline-2"
                         >
                             <PauseCircle className="size-3.5" />
                             Park Order
@@ -169,12 +169,16 @@ export default function CartSection({
 
                 {/* Stock Warning Notice */}
                 {stockWarning && (
-                    <div className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
+                    <div
+                        role="alert"
+                        className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-300"
+                    >
                         <span>{stockWarning}</span>
                         <button
                             type="button"
                             onClick={onDismissStockWarning}
-                            className="ml-2 font-bold hover:opacity-80"
+                            aria-label="Dismiss stock warning"
+                            className="ml-2 flex size-11 shrink-0 items-center justify-center rounded-xl font-bold hover:opacity-80"
                         >
                             ✕
                         </button>
@@ -183,10 +187,15 @@ export default function CartSection({
             </div>
 
             {/* Line Items Scroll Area */}
-            <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto p-3">
+            <div className="divide-border/60 min-h-0 flex-1 divide-y overflow-y-auto overscroll-contain px-4">
                 {items.length === 0 ? (
-                    <div className="text-muted-foreground flex h-52 flex-col items-center justify-center p-4 text-center">
-                        <ShoppingBag className="mb-2 size-10 opacity-30" />
+                    <div className="text-muted-foreground flex h-full min-h-44 flex-col items-center justify-center gap-2 py-6 text-center">
+                        <div className="bg-muted mb-2 flex size-16 shrink-0 items-center justify-center rounded-full">
+                            <ShoppingCart
+                                aria-hidden="true"
+                                className="size-7"
+                            />
+                        </div>
                         <p className="text-foreground text-sm font-semibold">
                             Cart is empty
                         </p>
@@ -210,21 +219,18 @@ export default function CartSection({
                         const isEditingThisNote = editingNoteLineId === line.id;
 
                         return (
-                            <div
-                                key={line.id}
-                                className="bg-background hover:border-primary/40 space-y-2 rounded-xl border p-2.5 shadow-xs transition-colors"
-                            >
+                            <div key={line.id} className="space-y-3 py-4">
                                 <div className="flex items-start gap-2.5">
                                     <LetterFallbackImage
                                         src={product.image_url ?? null}
                                         alt={product.name}
                                         size={36}
-                                        className="shrink-0 rounded-lg border"
+                                        className="shrink-0 rounded-xl"
                                         fallbackClassName="text-xs font-bold"
                                     />
                                     <div className="min-w-0 flex-1">
-                                        <div className="flex items-start justify-between gap-1">
-                                            <p className="text-foreground line-clamp-1 text-sm leading-snug font-semibold">
+                                        <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
+                                            <p className="text-foreground min-w-0 text-sm leading-snug font-semibold [overflow-wrap:anywhere]">
                                                 {product.name}
                                             </p>
                                             <span className="text-foreground shrink-0 text-sm font-bold tabular-nums">
@@ -272,7 +278,7 @@ export default function CartSection({
                                         {line.prepNotes &&
                                             !isEditingThisNote && (
                                                 <div className="mt-1 flex items-center gap-1">
-                                                    <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[11px] text-amber-700 italic dark:text-amber-400">
+                                                    <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[11px] break-words text-amber-700 italic dark:text-amber-400">
                                                         Note: {line.prepNotes}
                                                     </span>
                                                 </div>
@@ -289,7 +295,8 @@ export default function CartSection({
                                                 setNoteDraft(e.target.value)
                                             }
                                             placeholder="Prep note (e.g. no ice)..."
-                                            className="h-8 flex-1 text-xs"
+                                            aria-label={`Prep note for ${product.name}`}
+                                            className="h-11 min-w-0 flex-1 rounded-xl text-sm"
                                             autoFocus
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter') {
@@ -307,7 +314,8 @@ export default function CartSection({
                                         <Button
                                             type="button"
                                             size="sm"
-                                            className="h-8 px-2.5 text-xs font-semibold"
+                                            aria-label={`Save prep note for ${product.name}`}
+                                            className="h-11 rounded-xl px-3 text-xs font-semibold"
                                             onClick={() => {
                                                 onUpdateNotes(
                                                     line.id,
@@ -320,7 +328,7 @@ export default function CartSection({
                                         </Button>
                                     </div>
                                 ) : (
-                                    <div className="border-border/40 flex items-center justify-between border-t pt-1">
+                                    <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -329,7 +337,8 @@ export default function CartSection({
                                                 );
                                                 setEditingNoteLineId(line.id);
                                             }}
-                                            className="text-muted-foreground hover:text-primary text-[11px] underline"
+                                            aria-label={`Edit prep note for ${product.name}`}
+                                            className="text-muted-foreground hover:text-primary decoration-border focus-visible:outline-ring min-h-11 rounded-xl text-xs underline underline-offset-4 focus-visible:outline-2"
                                         >
                                             {line.prepNotes
                                                 ? 'Edit note'
@@ -342,13 +351,14 @@ export default function CartSection({
                                                 type="button"
                                                 size="icon"
                                                 variant="outline"
-                                                className="size-7 rounded-lg"
+                                                className="bg-muted/60 size-11 rounded-xl border-transparent"
                                                 onClick={() =>
                                                     onUpdateQuantity(
                                                         line.id,
                                                         line.quantity - 1,
                                                     )
                                                 }
+                                                aria-label={`Decrease quantity of ${product.name}`}
                                                 disabled={line.quantity <= 1}
                                             >
                                                 <Minus className="size-3" />
@@ -360,13 +370,14 @@ export default function CartSection({
                                                 type="button"
                                                 size="icon"
                                                 variant="outline"
-                                                className="size-7 rounded-lg"
+                                                className="bg-muted/60 size-11 rounded-xl border-transparent"
                                                 onClick={() =>
                                                     onUpdateQuantity(
                                                         line.id,
                                                         line.quantity + 1,
                                                     )
                                                 }
+                                                aria-label={`Increase quantity of ${product.name}`}
                                                 disabled={
                                                     line.quantity >=
                                                     product.stock_quantity
@@ -378,11 +389,12 @@ export default function CartSection({
                                                 type="button"
                                                 size="icon"
                                                 variant="ghost"
-                                                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-1 size-7"
+                                                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-1 size-11 rounded-xl"
                                                 onClick={() =>
                                                     onRemoveLine(line.id)
                                                 }
                                                 title="Remove line"
+                                                aria-label={`Remove ${product.name} from order`}
                                             >
                                                 <Trash2 className="size-3.5" />
                                             </Button>
@@ -396,14 +408,16 @@ export default function CartSection({
             </div>
 
             {/* Financial Summary & Actions Bottom Bar */}
-            <div className="bg-card shrink-0 space-y-3 border-t p-3.5">
+            <div className="bg-card border-border/60 max-h-[55%] shrink-0 space-y-2 overflow-y-auto overscroll-contain border-t p-4">
                 {/* Discount Code Section */}
                 <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
                         <button
                             type="button"
                             onClick={() => setIsDiscountOpen((v) => !v)}
-                            className="text-foreground hover:text-primary flex items-center gap-1 font-semibold"
+                            aria-expanded={isDiscountOpen}
+                            aria-label="Toggle discount options"
+                            className="text-foreground hover:text-primary flex min-h-11 items-center gap-2 rounded-xl font-semibold"
                         >
                             <Tag className="text-primary size-3.5" />
                             <span>
@@ -417,7 +431,7 @@ export default function CartSection({
                             <button
                                 type="button"
                                 onClick={() => onDiscountCodeChange('')}
-                                className="text-destructive text-[11px] font-medium hover:underline"
+                                className="text-destructive min-h-11 rounded-xl px-2 text-xs font-medium hover:underline"
                             >
                                 Remove
                             </button>
@@ -434,6 +448,7 @@ export default function CartSection({
                                         return (
                                             <button
                                                 key={d.id}
+                                                aria-pressed={isApplied}
                                                 type="button"
                                                 onClick={() =>
                                                     onDiscountCodeChange(
@@ -441,7 +456,7 @@ export default function CartSection({
                                                     )
                                                 }
                                                 className={cn(
-                                                    'rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition-all',
+                                                    'min-h-11 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors',
                                                     isApplied
                                                         ? 'bg-primary text-primary-foreground border-primary'
                                                         : 'bg-muted/40 hover:bg-muted text-muted-foreground',
@@ -459,14 +474,15 @@ export default function CartSection({
                                     onDiscountCodeChange(e.target.value)
                                 }
                                 placeholder="Enter discount code..."
-                                className="h-8 text-xs"
+                                aria-label="Discount code"
+                                className="h-11 rounded-xl text-sm"
                             />
                         </div>
                     )}
                 </div>
 
                 {/* Subtotal, Discount, Tax Calculation */}
-                <div className="bg-muted/30 space-y-1 rounded-xl border p-2.5 text-xs">
+                <div className="space-y-2 text-sm [&>div]:gap-3 [&>div>span]:min-w-0 [&>div>span]:break-words [&>div>span:last-child]:shrink-0">
                     <div className="text-muted-foreground flex justify-between">
                         <span>Subtotal</span>
                         <span className="text-foreground font-medium tabular-nums">
@@ -486,7 +502,7 @@ export default function CartSection({
                     )}
 
                     {discountAmount > 0 && (
-                        <div className="flex justify-between font-medium text-emerald-600">
+                        <div className="flex justify-between font-medium text-emerald-600 dark:text-emerald-400">
                             <span>
                                 Discount{' '}
                                 {appliedDiscount
@@ -510,9 +526,9 @@ export default function CartSection({
                         </span>
                     </div>
 
-                    <div className="border-border/60 text-foreground flex items-baseline justify-between border-t pt-1.5 text-base font-bold">
+                    <div className="border-border/60 text-foreground flex items-baseline justify-between border-t pt-3 text-base font-bold">
                         <span>Total Due</span>
-                        <span className="text-primary text-lg tabular-nums">
+                        <span className="text-foreground text-2xl tracking-tight tabular-nums">
                             {currencySymbol}
                             {total.toFixed(2)}
                         </span>
@@ -524,10 +540,10 @@ export default function CartSection({
                     type="button"
                     onClick={onCheckout}
                     disabled={items.length === 0}
-                    className="h-12 w-full gap-2 rounded-xl text-base font-bold shadow-md"
+                    className="h-12 w-full gap-2 rounded-2xl text-base font-semibold shadow-sm"
                 >
                     <span>
-                        Charge {currencySymbol}
+                        Pay {currencySymbol}
                         {total.toFixed(2)}
                     </span>
                     <kbd className="bg-primary-foreground/20 hidden rounded px-1.5 py-0.5 font-mono text-[10px] sm:inline-block">

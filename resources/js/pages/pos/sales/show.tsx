@@ -3,6 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { index as posIndex } from '@/routes/pos';
+import { index as salesIndex } from '@/routes/pos/sales';
 type OrderItem = {
     id: number;
     product_name: string;
@@ -158,20 +160,23 @@ export default function PosSalesShow({ order, workspace }: Props) {
     return (
         <>
             <Head title={`Receipt #${order.id}`} />
-            <div className="flex h-full flex-1 flex-col gap-4 p-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold">
+            <div className="bg-muted/40 flex min-h-full min-w-0 flex-1 flex-col gap-5 p-4 md:p-6 print:bg-white print:p-0 print:text-black">
+                <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-3">
+                    <h1 className="text-2xl font-semibold tracking-tight">
                         Receipt #{order.id}
                     </h1>
-                    <Link href="/pos/sales" className="text-sm underline">
+                    <Link
+                        href={salesIndex()}
+                        className="bg-card hover:bg-muted focus-visible:ring-ring border-border/60 inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none print:hidden"
+                    >
                         Sales history
                     </Link>
                 </div>
 
-                <Card>
-                    <CardHeader className="border-b">
-                        <div className="flex items-center justify-between">
-                            <CardTitle className="text-base">
+                <Card className="border-border/60 mx-auto w-full max-w-3xl min-w-0 rounded-3xl shadow-none print:rounded-none print:border-0 print:bg-white print:text-black">
+                    <CardHeader className="border-border/60 border-b px-4 pb-5 sm:px-6">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <CardTitle className="min-w-0 text-base break-words">
                                 {workspace?.name ?? 'POS'}
                             </CardTitle>
                             <Badge
@@ -182,7 +187,7 @@ export default function PosSalesShow({ order, workspace }: Props) {
                                           ? 'destructive'
                                           : 'outline'
                                 }
-                                className="text-xs"
+                                className="max-w-full rounded-full px-3 py-1 text-xs whitespace-normal capitalize"
                             >
                                 {order.status}
                                 {voidedLabel && ` at ${voidedLabel}`}
@@ -195,12 +200,12 @@ export default function PosSalesShow({ order, workspace }: Props) {
                             {createdLabel}
                         </p>
                     </CardHeader>
-                    <CardContent className="flex flex-col gap-3 text-sm">
+                    <CardContent className="flex flex-col gap-3 px-4 text-sm sm:px-6 [&_.tabular-nums]:break-all [&>div]:gap-x-4 [&>div]:break-words">
                         <div className="flex justify-between">
                             <span className="text-muted-foreground">
                                 Cashier
                             </span>
-                            <span className="font-medium">
+                            <span className="min-w-0 text-right font-medium break-words">
                                 {order.cashier?.name ?? '—'}
                             </span>
                         </div>
@@ -208,14 +213,16 @@ export default function PosSalesShow({ order, workspace }: Props) {
                         <Separator className="my-1" />
 
                         {order.items.length > 0 && (
-                            <div className="flex flex-col">
+                            <div className="flex flex-col gap-4 py-1">
                                 {order.items.map((item) => (
                                     <div
                                         key={item.id}
-                                        className="flex justify-between"
+                                        className="flex justify-between gap-4"
                                     >
-                                        <span className="flex gap-2">
-                                            <span>{item.product_name}</span>
+                                        <span className="flex min-w-0 flex-1 flex-wrap gap-x-2">
+                                            <span className="min-w-0 break-words">
+                                                {item.product_name}
+                                            </span>
                                             <span className="text-muted-foreground">
                                                 ×{item.quantity}
                                             </span>
@@ -275,7 +282,7 @@ export default function PosSalesShow({ order, workspace }: Props) {
                                 </span>
                             </div>
                         )}
-                        <div className="flex justify-between border-t pt-1 text-base font-semibold">
+                        <div className="bg-muted/50 flex justify-between rounded-2xl px-4 py-4 text-base font-semibold">
                             <span>Total</span>
                             <span className="tabular-nums">
                                 {formatMoney(
@@ -287,7 +294,7 @@ export default function PosSalesShow({ order, workspace }: Props) {
 
                         <Separator className="my-1" />
 
-                        <div className="bg-muted/30 flex flex-col gap-1 rounded-md border p-3">
+                        <div className="bg-muted/30 border-border/60 flex flex-col gap-2 rounded-2xl border p-4">
                             <p className="font-medium">
                                 {paymentLabel(order.payment_method)}
                             </p>
@@ -296,9 +303,9 @@ export default function PosSalesShow({ order, workspace }: Props) {
                                     {storedPayments.map((paymentLine) => (
                                         <p
                                             key={paymentLine.id}
-                                            className="text-muted-foreground flex justify-between gap-2"
+                                            className="text-muted-foreground flex flex-wrap justify-between gap-2 break-words"
                                         >
-                                            <span>
+                                            <span className="min-w-0 break-words">
                                                 {paymentLabel(
                                                     paymentLine.payment_method,
                                                 )}
@@ -349,7 +356,7 @@ export default function PosSalesShow({ order, workspace }: Props) {
                 </Card>
 
                 {order.status === 'completed' && (
-                    <div className="flex flex-col gap-3">
+                    <div className="bg-card border-border/60 mx-auto flex w-full max-w-3xl min-w-0 flex-col gap-3 rounded-3xl border p-4 sm:p-6 print:border-0 print:bg-white print:p-0 print:text-black">
                         <p className="text-sm">
                             {tender !== null &&
                             tender > 0 &&
@@ -360,22 +367,22 @@ export default function PosSalesShow({ order, workspace }: Props) {
                         <div className="flex flex-wrap gap-2 print:hidden">
                             <Button
                                 variant="outline"
-                                className="h-auto text-sm"
+                                className="min-h-11 rounded-full px-5 text-sm shadow-none"
                                 onClick={() => window.print()}
                             >
                                 Print receipt
                             </Button>
                             <Button
                                 variant="ghost"
-                                className="h-auto text-sm"
+                                className="min-h-11 rounded-full px-5 text-sm shadow-none"
                                 disabled
                                 title="Completed sales can't be voided from the terminal — handle refunds at the counter."
                             >
                                 Refund
                             </Button>
                             <Link
-                                href="/pos"
-                                className="self-center text-sm underline"
+                                href={posIndex()}
+                                className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
                             >
                                 New sale
                             </Link>
@@ -387,16 +394,19 @@ export default function PosSalesShow({ order, workspace }: Props) {
                 )}
 
                 {order.status === 'voided' && (
-                    <div className="border-destructive/40 bg-destructive/10 text-destructive rounded-md border p-3 text-sm">
+                    <div className="border-destructive/20 bg-destructive/10 text-destructive mx-auto w-full max-w-3xl rounded-3xl border p-4 text-sm">
                         This order was voided and the reserved stock was
                         released.
                     </div>
                 )}
 
                 {order.status === 'pending' && (
-                    <div className="border-warning/40 bg-warning/10 text-warning-foreground rounded-md border p-3 text-sm">
+                    <div className="mx-auto w-full max-w-3xl rounded-3xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-800 dark:text-amber-200">
                         This order is held for payment.{' '}
-                        <Link href="/pos" className="underline">
+                        <Link
+                            href={posIndex()}
+                            className="focus-visible:ring-ring inline-flex min-h-11 items-center rounded-full underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
+                        >
                             Complete or void it at the terminal.
                         </Link>
                     </div>
@@ -408,7 +418,7 @@ export default function PosSalesShow({ order, workspace }: Props) {
 
 PosSalesShow.layout = {
     breadcrumbs: [
-        { title: 'POS', href: '/pos' },
-        { title: 'Sales', href: '/pos/sales' },
+        { title: 'POS', href: posIndex.url() },
+        { title: 'Sales', href: salesIndex.url() },
     ],
 };

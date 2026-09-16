@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -64,20 +65,23 @@ export default function TableSelectModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden p-0 sm:max-w-lg">
-                <DialogHeader className="shrink-0 border-b p-5">
-                    <div className="flex items-center gap-2">
+            <DialogContent className="bg-card [&_button]:focus-visible:outline-ring flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-lg [&_button]:min-h-11 [&_button]:min-w-11 [&_button]:focus-visible:outline-2 [&>button:last-child]:top-2 [&>button:last-child]:right-2 [&>button:last-child]:flex [&>button:last-child]:size-11 [&>button:last-child]:items-center [&>button:last-child]:justify-center [&>button:last-child]:rounded-full">
+                <DialogHeader className="border-border/60 max-h-[35dvh] shrink-0 overflow-y-auto border-b p-4 pr-14 text-left sm:p-5 sm:pr-16">
+                    <div className="flex flex-wrap items-center gap-2">
                         <UtensilsCrossed className="text-primary size-5" />
-                        <DialogTitle className="text-xl font-bold">
+                        <DialogTitle className="text-lg leading-snug font-semibold">
                             Select Dining Table
                         </DialogTitle>
                     </div>
+                    <DialogDescription className="text-xs">
+                        Choose a table and set the guest count.
+                    </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex-1 space-y-5 overflow-y-auto p-5">
+                <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4 sm:p-5">
                     {/* Guest Count Selector */}
-                    <div className="bg-muted/40 flex items-center justify-between rounded-xl border p-3.5">
-                        <div className="flex items-center gap-2">
+                    <div className="bg-muted/40 flex flex-wrap items-center justify-between gap-3 rounded-2xl p-4">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Users className="text-muted-foreground size-4" />
                             <div>
                                 <Label className="text-sm font-semibold">
@@ -88,15 +92,16 @@ export default function TableSelectModal({
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Button
                                 type="button"
                                 size="icon"
                                 variant="outline"
-                                className="size-9 rounded-lg"
+                                className="size-11 rounded-xl"
                                 onClick={() =>
                                     setTempGuests((g) => Math.max(1, g - 1))
                                 }
+                                aria-label="Decrease guest count"
                                 disabled={tempGuests <= 1}
                             >
                                 <Minus className="size-3.5" />
@@ -108,12 +113,15 @@ export default function TableSelectModal({
                                 type="button"
                                 size="icon"
                                 variant="outline"
-                                className="size-9 rounded-lg"
+                                className="size-11 rounded-xl"
                                 onClick={() =>
                                     setTempGuests((g) => Math.min(50, g + 1))
                                 }
                             >
-                                <Plus className="size-3.5" />
+                                <Plus aria-hidden="true" className="size-3.5" />
+                                <span className="sr-only">
+                                    Increase guest count
+                                </span>
                             </Button>
                         </div>
                     </div>
@@ -126,12 +134,13 @@ export default function TableSelectModal({
                                 return (
                                     <button
                                         key={floor.id}
+                                        aria-pressed={isActive}
                                         type="button"
                                         onClick={() =>
                                             setActiveFloorId(floor.id)
                                         }
                                         className={cn(
-                                            'rounded-lg px-3 py-1.5 text-xs font-semibold transition-all',
+                                            'rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors',
                                             isActive
                                                 ? 'bg-primary text-primary-foreground shadow-sm'
                                                 : 'bg-muted/50 hover:bg-muted text-muted-foreground',
@@ -146,7 +155,7 @@ export default function TableSelectModal({
 
                     {/* Table Tiles Grid */}
                     <div className="space-y-2">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                             <Label className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                                 Available Tables (
                                 {currentFloor?.name ?? 'Floor'})
@@ -174,6 +183,8 @@ export default function TableSelectModal({
                                     return (
                                         <button
                                             key={table.id}
+                                            aria-pressed={isSelected}
+                                            aria-label={`Table ${table.name}, ${table.seats} seats`}
                                             type="button"
                                             onClick={() =>
                                                 setTempTable({
@@ -182,13 +193,13 @@ export default function TableSelectModal({
                                                 })
                                             }
                                             className={cn(
-                                                'flex flex-col items-center justify-center rounded-xl border p-4 text-center transition-all select-none',
+                                                'flex flex-col items-center justify-center rounded-xl border p-4 text-center transition-colors select-none',
                                                 isSelected
                                                     ? 'border-primary bg-primary/10 text-primary ring-primary font-semibold shadow-sm ring-2'
                                                     : 'border-border bg-card hover:bg-muted/40 text-foreground',
                                             )}
                                         >
-                                            <span className="text-base font-bold">
+                                            <span className="max-w-full text-base font-semibold break-words">
                                                 {table.name}
                                             </span>
                                             <Badge
@@ -205,7 +216,7 @@ export default function TableSelectModal({
                     </div>
                 </div>
 
-                <DialogFooter className="bg-muted/20 flex shrink-0 items-center gap-2 border-t p-4 sm:justify-between">
+                <DialogFooter className="bg-muted/30 border-border/60 max-h-[30dvh] shrink-0 flex-col gap-2 overflow-y-auto border-t p-4 sm:flex-row sm:justify-between [&>button]:w-full [&>button]:rounded-xl sm:[&>button]:w-auto">
                     <Button type="button" variant="ghost" onClick={onClose}>
                         Cancel
                     </Button>

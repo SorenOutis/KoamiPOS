@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -201,22 +202,22 @@ export default function PaymentModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="flex max-h-[95vh] flex-col overflow-hidden p-0 sm:max-w-2xl">
-                <DialogHeader className="shrink-0 border-b p-5">
-                    <div className="flex items-center justify-between">
+            <DialogContent className="bg-card [&_button]:focus-visible:outline-ring flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-2xl [&_button]:min-h-11 [&_button]:min-w-11 [&_button]:focus-visible:outline-2 [&>button:last-child]:top-2 [&>button:last-child]:right-2 [&>button:last-child]:flex [&>button:last-child]:size-11 [&>button:last-child]:items-center [&>button:last-child]:justify-center [&>button:last-child]:rounded-full">
+                <DialogHeader className="border-border/60 max-h-[35dvh] shrink-0 overflow-y-auto border-b p-4 pr-14 text-left sm:p-5 sm:pr-16">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
-                            <DialogTitle className="text-xl font-bold">
+                            <DialogTitle className="text-lg leading-snug font-semibold">
                                 Payment & Checkout
                             </DialogTitle>
-                            <p className="text-muted-foreground mt-0.5 text-xs">
+                            <DialogDescription className="text-muted-foreground mt-1 text-xs">
                                 Select payment tender or split the ticket
-                            </p>
+                            </DialogDescription>
                         </div>
                         <div className="text-right">
                             <span className="text-muted-foreground block text-xs font-medium">
                                 Total Due
                             </span>
-                            <span className="text-primary text-2xl font-black tabular-nums">
+                            <span className="text-primary text-2xl font-bold tabular-nums">
                                 {currencySymbol}
                                 {totalDue.toFixed(2)}
                             </span>
@@ -227,9 +228,10 @@ export default function PaymentModal({
                     <div className="bg-muted/60 mt-3 flex items-center rounded-xl border p-1">
                         <button
                             type="button"
+                            aria-pressed={mode === 'single'}
                             onClick={() => setMode('single')}
                             className={cn(
-                                'flex-1 rounded-lg py-1.5 text-xs font-bold transition-all',
+                                'flex-1 rounded-lg py-1.5 text-xs font-bold transition-colors',
                                 mode === 'single'
                                     ? 'bg-background text-foreground shadow-xs'
                                     : 'text-muted-foreground hover:text-foreground',
@@ -239,6 +241,7 @@ export default function PaymentModal({
                         </button>
                         <button
                             type="button"
+                            aria-pressed={mode === 'split'}
                             onClick={() => {
                                 setMode('split');
                                 setSplitAmountInput(splitRemaining.toFixed(2));
@@ -249,7 +252,7 @@ export default function PaymentModal({
                                 }
                             }}
                             className={cn(
-                                'flex-1 rounded-lg py-1.5 text-xs font-bold transition-all',
+                                'flex-1 rounded-lg py-1.5 text-xs font-bold transition-colors',
                                 mode === 'split'
                                     ? 'bg-background text-foreground shadow-xs'
                                     : 'text-muted-foreground hover:text-foreground',
@@ -260,9 +263,12 @@ export default function PaymentModal({
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 space-y-5 overflow-y-auto p-5">
+                <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain p-4 sm:p-5">
                     {errorMessage && (
-                        <div className="bg-destructive/10 border-destructive/30 text-destructive rounded-xl border p-3 text-sm">
+                        <div
+                            role="alert"
+                            className="bg-destructive/10 border-destructive/30 text-destructive rounded-xl border p-3 text-sm"
+                        >
                             {errorMessage}
                         </div>
                     )}
@@ -277,9 +283,10 @@ export default function PaymentModal({
                                 <div className="grid grid-cols-3 gap-2.5">
                                     <button
                                         type="button"
+                                        aria-pressed={paymentMethod === 'cash'}
                                         onClick={() => setPaymentMethod('cash')}
                                         className={cn(
-                                            'flex flex-col items-center justify-center rounded-xl border p-3.5 text-center transition-all select-none',
+                                            'flex flex-col items-center justify-center rounded-xl border p-3.5 text-center transition-colors select-none',
                                             paymentMethod === 'cash'
                                                 ? 'border-primary bg-primary/10 text-primary ring-primary font-bold shadow-xs ring-2'
                                                 : 'border-border bg-card hover:bg-muted/40 text-foreground',
@@ -291,9 +298,10 @@ export default function PaymentModal({
 
                                     <button
                                         type="button"
+                                        aria-pressed={paymentMethod === 'card'}
                                         onClick={() => setPaymentMethod('card')}
                                         className={cn(
-                                            'flex flex-col items-center justify-center rounded-xl border p-3.5 text-center transition-all select-none',
+                                            'flex flex-col items-center justify-center rounded-xl border p-3.5 text-center transition-colors select-none',
                                             paymentMethod === 'card'
                                                 ? 'border-primary bg-primary/10 text-primary ring-primary font-bold shadow-xs ring-2'
                                                 : 'border-border bg-card hover:bg-muted/40 text-foreground',
@@ -305,11 +313,14 @@ export default function PaymentModal({
 
                                     <button
                                         type="button"
+                                        aria-pressed={
+                                            paymentMethod === 'ewallet'
+                                        }
                                         onClick={() =>
                                             setPaymentMethod('ewallet')
                                         }
                                         className={cn(
-                                            'flex flex-col items-center justify-center rounded-xl border p-3.5 text-center transition-all select-none',
+                                            'flex flex-col items-center justify-center rounded-xl border p-3.5 text-center transition-colors select-none',
                                             paymentMethod === 'ewallet'
                                                 ? 'border-primary bg-primary/10 text-primary ring-primary font-bold shadow-xs ring-2'
                                                 : 'border-border bg-card hover:bg-muted/40 text-foreground',
@@ -327,7 +338,7 @@ export default function PaymentModal({
                             {paymentMethod === 'cash' ? (
                                 <div className="space-y-4">
                                     {/* Display Box */}
-                                    <div className="bg-muted/30 grid grid-cols-2 gap-3 rounded-2xl border p-3.5">
+                                    <div className="bg-muted/40 grid grid-cols-1 gap-3 rounded-2xl p-4 min-[400px]:grid-cols-2">
                                         <div>
                                             <span className="text-muted-foreground block text-xs font-semibold">
                                                 Cash Tendered
@@ -336,7 +347,7 @@ export default function PaymentModal({
                                                 <span className="text-muted-foreground text-lg font-bold">
                                                     {currencySymbol}
                                                 </span>
-                                                <span className="text-foreground text-2xl font-black tabular-nums">
+                                                <span className="text-foreground text-2xl font-bold tabular-nums">
                                                     {tenderedInput || '0.00'}
                                                 </span>
                                             </div>
@@ -347,10 +358,10 @@ export default function PaymentModal({
                                                 Change Due
                                             </span>
                                             <div className="mt-1 flex items-baseline justify-end gap-1">
-                                                <span className="text-lg font-bold text-emerald-600">
+                                                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                                                     {currencySymbol}
                                                 </span>
-                                                <span className="text-2xl font-black text-emerald-600 tabular-nums">
+                                                <span className="text-2xl font-bold text-emerald-600 tabular-nums">
                                                     {changeDue.toFixed(2)}
                                                 </span>
                                             </div>
@@ -362,7 +373,7 @@ export default function PaymentModal({
                                         <Label className="text-muted-foreground text-xs font-semibold">
                                             Quick Cash
                                         </Label>
-                                        <div className="grid grid-cols-4 gap-2">
+                                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                             {quickCashPresets.map(
                                                 (amount, idx) => (
                                                     <button
@@ -375,7 +386,7 @@ export default function PaymentModal({
                                                                 ),
                                                             )
                                                         }
-                                                        className="bg-muted/60 hover:bg-muted text-foreground rounded-xl border px-1 py-2.5 text-center text-sm font-bold tabular-nums transition-all"
+                                                        className="bg-muted/60 hover:bg-muted text-foreground rounded-xl border px-1 py-2.5 text-center text-sm font-bold tabular-nums transition-colors"
                                                     >
                                                         {idx === 0
                                                             ? 'Exact'
@@ -404,12 +415,19 @@ export default function PaymentModal({
                                         ].map((key) => (
                                             <button
                                                 key={key}
+                                                aria-label={
+                                                    key === 'backspace'
+                                                        ? 'Delete last digit'
+                                                        : key === 'C'
+                                                          ? 'Clear cash tendered'
+                                                          : `Enter ${key}`
+                                                }
                                                 type="button"
                                                 onClick={() =>
                                                     handleNumpad(key)
                                                 }
                                                 className={cn(
-                                                    'flex h-12 items-center justify-center rounded-xl border text-lg font-bold transition-all select-none active:scale-[0.97]',
+                                                    'flex h-12 items-center justify-center rounded-xl border text-lg font-bold transition-colors select-none active:scale-[0.97]',
                                                     key === 'C'
                                                         ? 'bg-destructive/10 text-destructive border-destructive/30 hover:bg-destructive/20'
                                                         : key === 'backspace'
@@ -449,12 +467,13 @@ export default function PaymentModal({
                                             Approval / Reference Code (Optional)
                                         </Label>
                                         <Input
+                                            aria-label="Approval or reference code"
                                             value={cardReference}
                                             onChange={(e) =>
                                                 setCardReference(e.target.value)
                                             }
                                             placeholder="e.g. AUTH-98241 or Trace #"
-                                            className="h-10 text-sm"
+                                            className="h-11 rounded-xl text-sm"
                                         />
                                     </div>
                                 </div>
@@ -492,9 +511,9 @@ export default function PaymentModal({
                                         {splitLines.map((line, idx) => (
                                             <div
                                                 key={idx}
-                                                className="bg-background flex items-center justify-between rounded-lg border p-2 text-xs"
+                                                className="border-border/60 flex items-center justify-between gap-2 border-t py-2 text-xs"
                                             >
-                                                <div className="flex items-center gap-1.5">
+                                                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                                                     <Badge
                                                         variant="outline"
                                                         className="text-[10px] capitalize"
@@ -529,7 +548,8 @@ export default function PaymentModal({
                                                             ),
                                                         )
                                                     }
-                                                    className="text-muted-foreground hover:text-destructive p-1"
+                                                    aria-label={`Remove ${line.method} payment ${idx + 1}`}
+                                                    className="text-muted-foreground hover:text-destructive flex size-11 shrink-0 items-center justify-center rounded-xl"
                                                 >
                                                     <Trash2 className="size-3.5" />
                                                 </button>
@@ -546,7 +566,7 @@ export default function PaymentModal({
                                         <Users className="size-3.5" />
                                         Split Evenly By Guests
                                     </Label>
-                                    <div className="grid grid-cols-4 gap-2">
+                                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                         {[2, 3, 4, 5].map((count) => (
                                             <button
                                                 key={count}
@@ -578,12 +598,13 @@ export default function PaymentModal({
                                         ).map((m) => (
                                             <button
                                                 key={m}
+                                                aria-pressed={splitMethod === m}
                                                 type="button"
                                                 onClick={() =>
                                                     setSplitMethod(m)
                                                 }
                                                 className={cn(
-                                                    'rounded-lg border py-2 text-xs font-bold capitalize transition-all',
+                                                    'rounded-lg border py-2 text-xs font-bold capitalize transition-colors',
                                                     splitMethod === m
                                                         ? 'bg-primary text-primary-foreground border-primary'
                                                         : 'bg-muted/40 text-muted-foreground hover:bg-muted',
@@ -602,6 +623,7 @@ export default function PaymentModal({
                                             <Input
                                                 type="number"
                                                 step="0.01"
+                                                aria-label="Amount to charge"
                                                 value={splitAmountInput}
                                                 onChange={(e) =>
                                                     setSplitAmountInput(
@@ -611,7 +633,7 @@ export default function PaymentModal({
                                                 placeholder={splitRemaining.toFixed(
                                                     2,
                                                 )}
-                                                className="h-9 text-sm tabular-nums"
+                                                className="h-11 rounded-xl text-sm tabular-nums"
                                             />
                                         </div>
 
@@ -623,6 +645,7 @@ export default function PaymentModal({
                                                 <Input
                                                     type="number"
                                                     step="0.01"
+                                                    aria-label="Cash tendered for split payment"
                                                     value={splitTenderedInput}
                                                     onChange={(e) =>
                                                         setSplitTenderedInput(
@@ -635,7 +658,7 @@ export default function PaymentModal({
                                                             2,
                                                         )
                                                     }
-                                                    className="h-9 text-sm tabular-nums"
+                                                    className="h-11 rounded-xl text-sm tabular-nums"
                                                 />
                                             </div>
                                         )}
@@ -655,7 +678,7 @@ export default function PaymentModal({
                     )}
                 </div>
 
-                <DialogFooter className="bg-muted/20 flex shrink-0 items-center gap-3 border-t p-4 sm:justify-between">
+                <DialogFooter className="bg-muted/30 border-border/60 max-h-[30dvh] shrink-0 flex-col gap-2 overflow-y-auto border-t p-4 sm:flex-row sm:justify-between [&>button]:w-full [&>button]:rounded-xl sm:[&>button]:w-auto">
                     <Button
                         type="button"
                         variant="ghost"
