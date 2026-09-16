@@ -131,41 +131,70 @@ export default function CatalogSection({
     }, [products]);
 
     return (
-        <div className="bg-background flex h-full min-h-0 flex-col overflow-hidden">
+        <div className="bg-card border-border/60 flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-3xl border">
             {/* Top Bar: Search Input */}
-            <div className="bg-card shrink-0 border-b p-3">
-                <div className="relative">
-                    <Search className="text-muted-foreground absolute top-1/2 left-3.5 size-4 -translate-y-1/2" />
-                    <Input
-                        ref={searchInputRef}
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search products by name or scan barcode... (Press / to focus)"
-                        className="bg-muted/30 focus-visible:ring-primary h-10 rounded-xl pr-9 pl-9 text-sm"
-                    />
-                    {searchQuery && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setSearchQuery('');
-                                searchInputRef.current?.focus();
-                            }}
-                            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
-                            aria-label="Clear search"
-                        >
-                            <X className="size-4" />
-                        </button>
-                    )}
-                </div>
+            <div className="border-border/60 shrink-0 border-b p-3 sm:p-4">
+                <div className="flex min-w-0 items-center gap-2">
+                    <div className="relative min-w-0 flex-1">
+                        <Search className="text-muted-foreground absolute top-1/2 left-3.5 size-4 -translate-y-1/2" />
+                        <Input
+                            ref={searchInputRef}
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search or scan barcode…"
+                            aria-label="Search products by name, SKU, or category"
+                            title="Search products (press / or Ctrl+K to focus)"
+                            className="bg-muted/50 focus-visible:ring-primary border-border/50 h-11 min-w-0 rounded-xl pr-11 pl-10 text-sm shadow-none"
+                        />
+                        {searchQuery && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSearchQuery('');
+                                    searchInputRef.current?.focus();
+                                }}
+                                className="text-muted-foreground hover:text-foreground focus-visible:ring-primary absolute top-1/2 right-0 flex size-11 -translate-y-1/2 items-center justify-center rounded-xl focus-visible:ring-2 focus-visible:outline-none"
+                                aria-label="Clear search"
+                            >
+                                <X className="size-4" />
+                            </button>
+                        )}
+                    </div>
 
-                {/* Category Pills horizontal scroll */}
-                <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto pt-2.5 pb-0.5">
+                    <select
+                        aria-label="Filter by category"
+                        value={activeCategoryId ?? ''}
+                        onChange={(event) =>
+                            setActiveCategoryId(
+                                event.target.value === ''
+                                    ? null
+                                    : Number(event.target.value),
+                            )
+                        }
+                        className="bg-card text-foreground focus-visible:ring-primary border-border/60 h-11 w-24 shrink-0 truncate rounded-xl border px-2 text-xs font-medium focus-visible:ring-2 focus-visible:outline-none sm:w-36 sm:px-3 sm:text-sm"
+                    >
+                        <option value="">All categories</option>
+                        {categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                                {category.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            <div className="shrink-0 px-3 pt-3 sm:px-4">
+                <div
+                    aria-label="Product categories"
+                    className="no-scrollbar bg-muted/60 flex items-center gap-1 overflow-x-auto rounded-2xl p-1"
+                >
                     <button
                         type="button"
                         onClick={() => setActiveCategoryId(null)}
+                        aria-pressed={activeCategoryId === null}
                         className={cn(
-                            'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all select-none',
+                            'focus-visible:ring-primary inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-xs font-semibold whitespace-nowrap select-none focus-visible:ring-2 focus-visible:outline-none',
                             activeCategoryId === null
                                 ? 'bg-primary text-primary-foreground shadow-xs'
                                 : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -193,13 +222,14 @@ export default function CatalogSection({
                             <button
                                 key={cat.id}
                                 type="button"
+                                aria-pressed={isActive}
                                 onClick={() =>
                                     setActiveCategoryId(
                                         isActive ? null : cat.id,
                                     )
                                 }
                                 className={cn(
-                                    'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-all select-none',
+                                    'focus-visible:ring-primary inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-xs font-semibold whitespace-nowrap select-none focus-visible:ring-2 focus-visible:outline-none',
                                     isActive
                                         ? 'bg-primary text-primary-foreground shadow-xs'
                                         : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -231,7 +261,7 @@ export default function CatalogSection({
             </div>
 
             {/* Products Grid */}
-            <div className="min-h-0 flex-1 overflow-y-auto p-3.5">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4">
                 {filteredProducts.length === 0 ? (
                     <div className="text-muted-foreground flex h-48 flex-col items-center justify-center rounded-2xl border border-dashed p-6 text-center">
                         <Search className="mb-2 size-8 opacity-30" />
@@ -247,14 +277,14 @@ export default function CatalogSection({
                             <button
                                 type="button"
                                 onClick={() => setSearchQuery('')}
-                                className="text-primary mt-3 text-xs font-semibold hover:underline"
+                                className="text-primary focus-visible:ring-primary mt-3 min-h-11 rounded-lg px-3 text-xs font-semibold hover:underline focus-visible:ring-2 focus-visible:outline-none"
                             >
                                 Clear search
                             </button>
                         )}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,140px),1fr))] gap-3 sm:grid-cols-[repeat(auto-fill,minmax(min(100%,160px),1fr))]">
                         {filteredProducts.map((product) => (
                             <PosProductTile
                                 key={product.id}
@@ -267,6 +297,17 @@ export default function CatalogSection({
                     </div>
                 )}
             </div>
+            <footer
+                className="text-muted-foreground border-border/60 shrink-0 border-t px-3 py-3 text-xs sm:px-4"
+                aria-live="polite"
+                aria-atomic="true"
+            >
+                Showing{' '}
+                <span className="text-foreground font-semibold tabular-nums">
+                    {filteredProducts.length}
+                </span>{' '}
+                of {products.length} items
+            </footer>
         </div>
     );
 }

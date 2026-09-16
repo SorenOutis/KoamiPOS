@@ -1,10 +1,13 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import kdsRoutes from '@/routes/pos/kds';
+import { index as posIndex } from '@/routes/pos';
+import { index as kdsIndex } from '@/routes/pos/kds';
+import { status as itemStatus } from '@/routes/pos/kds/items';
+import { status as orderStatus } from '@/routes/pos/kds/orders';
 
 type KdsItem = {
     id: number;
@@ -74,7 +77,7 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
             return;
         }
 
-        router.patch(kdsRoutes.orders.status.url(order.id), {
+        router.patch(orderStatus.url(order.id), {
             kds_status: status,
         });
     }
@@ -85,7 +88,7 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
             return;
         }
 
-        router.patch(kdsRoutes.items.status.url(item.id), {
+        router.patch(itemStatus.url(item.id), {
             kds_status: status,
         });
     }
@@ -93,50 +96,59 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
     return (
         <>
             <Head title="Kitchen Display" />
-            <div className="min-h-full bg-zinc-950 p-4 text-zinc-50 md:p-6">
-                <div className="mx-auto flex max-w-[1600px] flex-col gap-5">
+            <div className="bg-muted/40 text-foreground min-h-full min-w-0 flex-1 p-4 md:p-6">
+                <div className="mx-auto flex max-w-[1600px] min-w-0 flex-col gap-5">
                     <div className="flex flex-wrap items-end justify-between gap-3">
-                        <div>
-                            <p className="text-xs font-medium tracking-[0.25em] text-amber-300 uppercase">
-                                Kitchen display system
+                        <div className="min-w-0">
+                            <p className="text-muted-foreground text-xs font-medium break-words">
+                                {workspace?.name ?? 'POS'}
                             </p>
-                            <h1 className="mt-1 text-3xl font-semibold">
-                                {workspace?.name ?? 'Kitchen'}
+                            <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+                                Kitchen display
                             </h1>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
                             {flash?.success && (
-                                <span className="text-sm text-emerald-300">
+                                <span
+                                    role="status"
+                                    className="text-sm break-words text-emerald-700 dark:text-emerald-300"
+                                >
                                     {flash.success}
                                 </span>
                             )}
                             <Button
                                 variant="outline"
-                                className="border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800"
+                                className="bg-card border-border/60 min-h-11 rounded-full px-4 shadow-none"
                                 onClick={() => router.reload()}
                             >
                                 Refresh
                             </Button>
+                            <Link
+                                href={posIndex()}
+                                className="bg-card hover:bg-muted focus-visible:ring-ring border-border/60 inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+                            >
+                                Back to POS
+                            </Link>
                         </div>
                     </div>
                     {orders.length === 0 ? (
-                        <div className="rounded-xl border border-dashed border-zinc-700 p-12 text-center text-zinc-400">
+                        <div className="bg-card text-muted-foreground border-border/60 rounded-3xl border border-dashed px-4 py-16 text-center text-sm">
                             No active kitchen tickets.
                         </div>
                     ) : (
-                        <div className="grid gap-4 xl:grid-cols-3">
+                        <div className="grid items-start gap-4 md:grid-cols-2 2xl:grid-cols-3">
                             {orders.map((order) => (
                                 <Card
                                     key={order.id}
-                                    className="border-zinc-800 bg-zinc-900 text-zinc-50"
+                                    className="border-border/60 min-w-0 gap-0 rounded-3xl shadow-none"
                                 >
-                                    <CardHeader className="border-b border-zinc-800">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div>
-                                                <CardTitle className="text-xl">
+                                    <CardHeader className="border-border/60 border-b px-4 pb-4 sm:px-5">
+                                        <div className="flex flex-wrap items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <CardTitle className="text-base">
                                                     Ticket #{order.id}
                                                 </CardTitle>
-                                                <p className="mt-1 text-sm text-zinc-400">
+                                                <p className="text-muted-foreground mt-2 text-sm break-words">
                                                     {order.table?.name ??
                                                         order.order_type.replace(
                                                             '_',
@@ -148,10 +160,10 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
                                             </div>
                                             <Badge
                                                 className={cn(
-                                                    'border-transparent text-xs capitalize',
+                                                    'rounded-full border-transparent px-3 py-1 text-xs capitalize',
                                                     order.kds_status === 'ready'
-                                                        ? 'bg-emerald-500 text-zinc-950'
-                                                        : 'bg-amber-400 text-zinc-950',
+                                                        ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                                                        : 'bg-muted text-muted-foreground',
                                                 )}
                                             >
                                                 {elapsedLabel(order.created_at)}{' '}
@@ -159,7 +171,7 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
                                             </Badge>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="flex flex-col gap-4 pt-4">
+                                    <CardContent className="flex flex-col gap-4 px-4 pt-4 sm:px-5">
                                         <div className="flex flex-col gap-3">
                                             {order.items.map((item) => (
                                                 <button
@@ -168,22 +180,22 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
                                                     onClick={() =>
                                                         updateItem(item)
                                                     }
-                                                    className="rounded-lg border border-zinc-800 bg-zinc-950 p-3 text-left transition hover:border-amber-300/60"
+                                                    className="bg-muted/40 hover:bg-muted focus-visible:ring-ring border-border/60 min-h-11 min-w-0 rounded-2xl border p-3 text-left focus-visible:ring-2 focus-visible:outline-none"
                                                 >
-                                                    <div className="flex items-start justify-between gap-3">
-                                                        <span className="text-lg font-medium">
+                                                    <div className="flex flex-wrap items-start justify-between gap-2">
+                                                        <span className="min-w-0 text-sm font-medium break-words">
                                                             <strong>
                                                                 {item.quantity}×
                                                             </strong>{' '}
                                                             {item.product_name}
                                                         </span>
-                                                        <span className="text-xs text-zinc-400 capitalize">
+                                                        <span className="text-muted-foreground bg-card rounded-full px-2 py-1 text-xs capitalize">
                                                             {item.kds_status}
                                                         </span>
                                                     </div>
                                                     {item.modifiers.length >
                                                         0 && (
-                                                        <p className="mt-1 text-sm text-amber-200">
+                                                        <p className="text-muted-foreground mt-2 text-sm break-words">
                                                             {item.modifiers
                                                                 .map(
                                                                     (
@@ -195,7 +207,7 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
                                                         </p>
                                                     )}
                                                     {item.prep_notes && (
-                                                        <p className="mt-1 text-sm text-zinc-300">
+                                                        <p className="text-muted-foreground mt-2 text-sm break-words">
                                                             Note:{' '}
                                                             {item.prep_notes}
                                                         </p>
@@ -204,13 +216,13 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
                                             ))}
                                         </div>
                                         {order.kitchen_notes && (
-                                            <p className="rounded-lg bg-amber-300/10 p-3 text-sm text-amber-100">
+                                            <p className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3 text-sm break-words text-amber-800 dark:text-amber-200">
                                                 Kitchen note:{' '}
                                                 {order.kitchen_notes}
                                             </p>
                                         )}
                                         <Button
-                                            className="h-12 bg-amber-300 text-zinc-950 hover:bg-amber-200"
+                                            className="min-h-12 w-full rounded-full shadow-none"
                                             onClick={() => updateOrder(order)}
                                         >
                                             {order.kds_status === 'preparing'
@@ -232,7 +244,7 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
 
 KitchenDisplayIndex.layout = {
     breadcrumbs: [
-        { title: 'POS', href: '/pos' },
-        { title: 'Kitchen', href: '/pos/kds' },
+        { title: 'POS', href: posIndex.url() },
+        { title: 'Kitchen', href: kdsIndex.url() },
     ],
 };

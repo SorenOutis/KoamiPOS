@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -168,8 +169,8 @@ export default function ModifierModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden p-0 sm:max-w-xl">
-                <DialogHeader className="shrink-0 border-b p-5">
+            <DialogContent className="bg-card [&_button]:focus-visible:outline-ring flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-xl [&_button]:min-h-11 [&_button]:min-w-11 [&_button]:focus-visible:outline-2 [&>button:last-child]:top-2 [&>button:last-child]:right-2 [&>button:last-child]:flex [&>button:last-child]:size-11 [&>button:last-child]:items-center [&>button:last-child]:justify-center [&>button:last-child]:rounded-full">
+                <DialogHeader className="border-border/60 max-h-[35dvh] shrink-0 overflow-y-auto border-b p-4 pr-14 text-left sm:p-5 sm:pr-16">
                     <div className="flex items-center gap-3">
                         <LetterFallbackImage
                             src={product.image_url ?? null}
@@ -179,18 +180,18 @@ export default function ModifierModal({
                             fallbackClassName="text-base font-bold"
                         />
                         <div className="min-w-0 flex-1">
-                            <DialogTitle className="truncate text-xl font-bold">
+                            <DialogTitle className="text-lg leading-snug font-semibold break-words">
                                 {product.name}
                             </DialogTitle>
-                            <p className="text-muted-foreground mt-0.5 text-sm">
+                            <DialogDescription className="text-muted-foreground mt-1 text-sm">
                                 Base: {currencySymbol}
                                 {Number(product.price).toFixed(2)}
-                            </p>
+                            </DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 space-y-6 overflow-y-auto p-5">
+                <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain p-4 sm:p-5">
                     {/* Modifiers groups */}
                     {product.modifiers?.map((modifier) => {
                         const chosen = selectedOptions[modifier.id] ?? [];
@@ -204,8 +205,8 @@ export default function ModifierModal({
 
                         return (
                             <div key={modifier.id} className="space-y-2.5">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex flex-wrap items-center gap-2">
                                         <Label className="text-sm font-semibold">
                                             {modifier.name}
                                         </Label>
@@ -244,6 +245,7 @@ export default function ModifierModal({
                                         return (
                                             <button
                                                 key={option.id}
+                                                aria-pressed={isSelected}
                                                 type="button"
                                                 onClick={() =>
                                                     toggleOption(
@@ -252,7 +254,7 @@ export default function ModifierModal({
                                                     )
                                                 }
                                                 className={cn(
-                                                    'flex items-center justify-between rounded-xl border p-3 text-left transition-all select-none',
+                                                    'flex items-center justify-between rounded-xl border p-3 text-left transition-colors select-none',
                                                     isSelected
                                                         ? 'border-primary bg-primary/10 text-primary ring-primary font-medium ring-1'
                                                         : 'border-border bg-card hover:bg-muted/50 text-foreground',
@@ -271,7 +273,7 @@ export default function ModifierModal({
                                                             <Check className="size-2.5 stroke-[3]" />
                                                         )}
                                                     </div>
-                                                    <span className="truncate text-sm">
+                                                    <span className="text-sm break-words">
                                                         {option.name}
                                                     </span>
                                                 </div>
@@ -302,7 +304,7 @@ export default function ModifierModal({
                             value={prepNotes}
                             onChange={(e) => setPrepNotes(e.target.value)}
                             placeholder="e.g. Less ice, extra hot, sauce on the side..."
-                            className="h-10 text-sm"
+                            className="h-11 rounded-xl text-sm"
                         />
                     </div>
 
@@ -316,15 +318,16 @@ export default function ModifierModal({
                                 Stock available: {product.stock_quantity}
                             </span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Button
                                 type="button"
                                 size="icon"
                                 variant="outline"
-                                className="size-10 rounded-xl"
+                                className="size-11 rounded-xl"
                                 onClick={() =>
                                     setQuantity((q) => Math.max(1, q - 1))
                                 }
+                                aria-label="Decrease quantity"
                                 disabled={quantity <= 1}
                             >
                                 <Minus className="size-4" />
@@ -336,12 +339,13 @@ export default function ModifierModal({
                                 type="button"
                                 size="icon"
                                 variant="outline"
-                                className="size-10 rounded-xl"
+                                className="size-11 rounded-xl"
                                 onClick={() =>
                                     setQuantity((q) =>
                                         Math.min(product.stock_quantity, q + 1),
                                     )
                                 }
+                                aria-label="Increase quantity"
                                 disabled={quantity >= product.stock_quantity}
                             >
                                 <Plus className="size-4" />
@@ -350,7 +354,7 @@ export default function ModifierModal({
                     </div>
                 </div>
 
-                <DialogFooter className="bg-muted/20 flex shrink-0 items-center gap-3 border-t p-4 sm:justify-between">
+                <DialogFooter className="bg-muted/30 border-border/60 max-h-[30dvh] shrink-0 flex-col gap-2 overflow-y-auto border-t p-4 sm:flex-row sm:justify-between [&>button]:w-full [&>button]:rounded-xl sm:[&>button]:w-auto">
                     <Button type="button" variant="ghost" onClick={onClose}>
                         Cancel
                     </Button>

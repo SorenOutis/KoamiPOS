@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -93,22 +94,22 @@ export default function ReceiptModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden p-0 sm:max-w-md">
-                <DialogHeader className="bg-muted/20 shrink-0 border-b p-4 text-center">
-                    <div className="mx-auto mb-1.5 flex size-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+            <DialogContent className="bg-card [&_button]:focus-visible:outline-ring flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-md [&_button]:min-h-11 [&_button]:min-w-11 [&_button]:focus-visible:outline-2 [&>button:last-child]:top-2 [&>button:last-child]:right-2 [&>button:last-child]:flex [&>button:last-child]:size-11 [&>button:last-child]:items-center [&>button:last-child]:justify-center [&>button:last-child]:rounded-full">
+                <DialogHeader className="bg-muted/20 border-border/60 max-h-[35dvh] shrink-0 overflow-y-auto border-b p-4 px-14 text-center">
+                    <div className="mx-auto mb-1.5 flex size-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                         <CheckCircle2 className="size-6" />
                     </div>
                     <DialogTitle className="text-lg font-bold">
                         Sale Completed
                     </DialogTitle>
-                    <p className="text-muted-foreground text-xs">
+                    <DialogDescription className="text-muted-foreground text-xs">
                         Order #{order.id} has been recorded
-                    </p>
+                    </DialogDescription>
                 </DialogHeader>
 
                 {/* Thermal Receipt Paper Card */}
-                <div className="bg-muted/30 flex-1 overflow-y-auto p-4">
-                    <div className="bg-background text-foreground mx-auto max-w-[320px] space-y-3 rounded-xl border p-5 font-mono text-xs shadow-xs select-text">
+                <div className="bg-muted/30 min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4">
+                    <div className="bg-background text-foreground mx-auto max-w-[320px] space-y-3 rounded-2xl border p-4 font-mono text-xs break-words shadow-xs select-text sm:p-5">
                         {/* Store Header */}
                         <div className="space-y-0.5 text-center">
                             <h3 className="text-sm font-bold tracking-tight">
@@ -184,7 +185,7 @@ export default function ReceiptModal({
                             </div>
 
                             {discount > 0 && (
-                                <div className="flex justify-between font-semibold text-emerald-600">
+                                <div className="flex justify-between font-semibold text-emerald-600 dark:text-emerald-400">
                                     <span>Discount</span>
                                     <span className="tabular-nums">
                                         -{currencySymbol}
@@ -252,7 +253,7 @@ export default function ReceiptModal({
                             )}
 
                             {changeDue > 0 && (
-                                <div className="flex justify-between pt-0.5 font-bold text-emerald-600">
+                                <div className="flex justify-between pt-0.5 font-bold text-emerald-600 dark:text-emerald-400">
                                     <span>Change</span>
                                     <span className="tabular-nums">
                                         {currencySymbol}
@@ -274,10 +275,11 @@ export default function ReceiptModal({
                     </div>
                 </div>
 
-                <DialogFooter className="bg-card flex shrink-0 items-center gap-2 border-t p-3.5 sm:justify-between">
+                <DialogFooter className="bg-muted/30 border-border/60 max-h-[30dvh] shrink-0 flex-col gap-2 overflow-y-auto border-t p-4 sm:flex-row sm:justify-between [&>button]:w-full [&>button]:rounded-xl sm:[&>button]:w-auto">
                     <Button
                         type="button"
                         variant="outline"
+                        aria-label="Print receipt"
                         onClick={handlePrint}
                         className="gap-1.5 font-semibold"
                     >

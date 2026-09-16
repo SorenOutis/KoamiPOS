@@ -1,6 +1,17 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { PosProduct } from '@/components/ProductTile';
+import { ShoppingCart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/use-mobile';
 import usePosCart from '@/hooks/use-pos-cart';
 import type { CartModifierSelection, HeldOrder } from '@/hooks/use-pos-cart';
 import orders from '@/routes/pos/orders';
@@ -96,6 +107,8 @@ function PosIndex({
     const [stockWarning, setStockWarning] = useState<string | null>(null);
 
     // Modal Visibility States
+    const isMobile = useIsMobile();
+    const [isCartOpen, setIsCartOpen] = useState(false);
     const [isTableModalOpen, setIsTableModalOpen] = useState(false);
     const [isHeldModalOpen, setIsHeldModalOpen] = useState(false);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -301,14 +314,31 @@ function PosIndex({
         [recallHeldOrder],
     );
 
-    // Hotkey Listener: Space to open checkout modal
+    const openCheckout = useCallback(() => {
+        setIsCartOpen(false);
+        setPaymentErrorMessage(null);
+        setIsPaymentModalOpen(true);
+    }, []);
+
+    useEffect(() => {
+        const desktop = window.matchMedia('(min-width: 768px)');
+        const closeMobileCart = () => {
+            if (desktop.matches) setIsCartOpen(false);
+        };
+        desktop.addEventListener('change', closeMobileCart);
+        return () => desktop.removeEventListener('change', closeMobileCart);
+    }, []);
+
+    // Space opens checkout only outside interactive controls and other dialogs.
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
             if (e.code === 'Space') {
                 const target = e.target as HTMLElement;
                 if (
-                    target.tagName === 'INPUT' ||
-                    target.tagName === 'TEXTAREA' ||
+                    e.defaultPrevented ||
+                    target.closest(
+                        'button, a, input, textarea, select, [role="button"], [role="combobox"], [role="menuitem"]',
+                    ) ||
                     target.isContentEditable ||
                     isPaymentModalOpen ||
                     configuringProduct ||
@@ -320,8 +350,7 @@ function PosIndex({
                 }
                 if (items.length > 0) {
                     e.preventDefault();
-                    setPaymentErrorMessage(null);
-                    setIsPaymentModalOpen(true);
+                    openCheckout();
                 }
             }
         }
@@ -334,6 +363,7 @@ function PosIndex({
         isTableModalOpen,
         isHeldModalOpen,
         isReceiptModalOpen,
+        openCheckout,
     ]);
 
     // Complete Sale Execution (Two-Phase API Bridge)
@@ -472,11 +502,42 @@ function PosIndex({
         [items, discountCode, orderType, selectedTable, guestCount, clearCart],
     );
 
+    const cartSection = (
+        <CartSection
+            items={items}
+            products={products}
+            currencySymbol={currencySymbol}
+            discounts={discounts}
+            discountCode={discountCode}
+            onDiscountCodeChange={setDiscountCode}
+            onUpdateQuantity={updateQuantity}
+            onUpdateNotes={updateLineNotes}
+            onRemoveLine={removeLine}
+            onClearCart={clearCart}
+            onVoidLast={handleVoidLast}
+            onHoldOrder={handleHoldOrder}
+            subtotal={subtotal}
+            discountAmount={discountAmount}
+            taxAmount={taxAmount}
+            serviceChargeAmount={serviceChargeAmount}
+            serviceChargeRate={serviceChargeRate}
+            taxRate={taxRate}
+            taxInclusive={taxInclusive}
+            total={total}
+            onCheckout={openCheckout}
+            orderType={orderType}
+            selectedTable={selectedTable}
+            guestCount={guestCount}
+            stockWarning={stockWarning}
+            onDismissStockWarning={() => setStockWarning(null)}
+        />
+    );
+
     return (
         <>
             <Head title="POS Terminal — KoamiPOS" />
 
-            <div className="bg-background text-foreground flex h-screen w-screen flex-col overflow-hidden select-none">
+            <div className="bg-muted text-foreground flex h-dvh w-full flex-col overflow-hidden">
                 {/* Fixed POS Header */}
                 <PosHeader
                     workspace={workspace}
@@ -493,7 +554,7 @@ function PosIndex({
                 />
 
                 {/* Main 2-Column Responsive Split Terminal */}
-                <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden md:grid-cols-[minmax(0,1fr)_340px] lg:grid-cols-[minmax(0,1fr)_390px] xl:grid-cols-[minmax(0,1fr)_440px]">
+                <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3 md:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
                     {/* Left Panel: Fast Lookup & Catalog */}
                     <div className="h-full min-h-0 overflow-hidden">
                         <CatalogSection
@@ -506,40 +567,60 @@ function PosIndex({
                     </div>
 
                     {/* Right Panel: Order Cart & Sticky Checkout */}
-                    <div className="h-full min-h-0 overflow-hidden">
-                        <CartSection
-                            items={items}
-                            products={products}
-                            currencySymbol={currencySymbol}
-                            discounts={discounts}
-                            discountCode={discountCode}
-                            onDiscountCodeChange={setDiscountCode}
-                            onUpdateQuantity={updateQuantity}
-                            onUpdateNotes={updateLineNotes}
-                            onRemoveLine={removeLine}
-                            onClearCart={clearCart}
-                            onVoidLast={handleVoidLast}
-                            onHoldOrder={handleHoldOrder}
-                            subtotal={subtotal}
-                            discountAmount={discountAmount}
-                            taxAmount={taxAmount}
-                            serviceChargeAmount={serviceChargeAmount}
-                            serviceChargeRate={serviceChargeRate}
-                            taxRate={taxRate}
-                            taxInclusive={taxInclusive}
-                            total={total}
-                            onCheckout={() => {
-                                setPaymentErrorMessage(null);
-                                setIsPaymentModalOpen(true);
-                            }}
-                            orderType={orderType}
-                            selectedTable={selectedTable}
-                            guestCount={guestCount}
-                            stockWarning={stockWarning}
-                            onDismissStockWarning={() => setStockWarning(null)}
-                        />
-                    </div>
+                    {!isMobile && (
+                        <aside
+                            aria-label="Current order"
+                            className="hidden h-full min-h-0 overflow-hidden md:block"
+                        >
+                            {cartSection}
+                        </aside>
+                    )}
                 </div>
+                {isMobile && (
+                    <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+                        <div className="bg-card shrink-0 border-t p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                            {stockWarning && (
+                                <p
+                                    role="status"
+                                    className="mb-2 text-sm text-amber-700 dark:text-amber-300"
+                                >
+                                    {stockWarning}
+                                </p>
+                            )}
+                            <SheetTrigger asChild>
+                                <Button className="h-12 w-full justify-between rounded-2xl">
+                                    <span className="flex items-center gap-2">
+                                        <ShoppingCart className="size-5" />
+                                        View order (
+                                        {items.reduce(
+                                            (count, item) =>
+                                                count + item.quantity,
+                                            0,
+                                        )}
+                                        )
+                                    </span>
+                                    <span className="tabular-nums">
+                                        {currencySymbol}
+                                        {total.toFixed(2)}
+                                    </span>
+                                </Button>
+                            </SheetTrigger>
+                        </div>
+                        <SheetContent
+                            side="bottom"
+                            className="h-[95dvh] gap-0 rounded-t-3xl p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] motion-reduce:animate-none [&>button]:top-2 [&>button]:right-2 [&>button]:flex [&>button]:size-11 [&>button]:items-center [&>button]:justify-center"
+                        >
+                            <SheetHeader className="shrink-0 px-2 pt-1 pr-12 pb-3">
+                                <SheetTitle>Review order</SheetTitle>
+                                <SheetDescription>
+                                    Adjust items, add notes, and continue to
+                                    payment.
+                                </SheetDescription>
+                            </SheetHeader>
+                            <div className="min-h-0 flex-1">{cartSection}</div>
+                        </SheetContent>
+                    </Sheet>
+                )}
             </div>
 
             {/* Modals & Dialogs */}

@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { index as posIndex } from '@/routes/pos';
+import { index as tablesIndex } from '@/routes/pos/tables';
 
 type DiningTable = {
     id: number;
@@ -31,10 +33,11 @@ type Props = {
 };
 
 const statusClasses: Record<DiningTable['status'], string> = {
-    free: 'border-emerald-500/40 bg-emerald-500/10',
-    occupied: 'border-amber-500/40 bg-amber-500/10',
-    reserved: 'border-sky-500/40 bg-sky-500/10',
-    billed: 'border-violet-500/40 bg-violet-500/10',
+    free: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+    occupied:
+        'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+    reserved: 'border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-300',
+    billed: 'border-violet-500/20 bg-violet-500/10 text-violet-700 dark:text-violet-300',
 };
 
 export default function DiningTablesIndex({ workspace, floors }: Props) {
@@ -45,17 +48,20 @@ export default function DiningTablesIndex({ workspace, floors }: Props) {
     return (
         <>
             <Head title="Dining Tables" />
-            <div className="flex min-h-full flex-col gap-5 p-4 md:p-6">
+            <div className="bg-muted/40 flex min-h-full min-w-0 flex-1 flex-col gap-5 p-4 md:p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                        <p className="text-muted-foreground text-xs font-medium tracking-[0.2em] uppercase">
-                            Hospitality floor plan
+                    <div className="min-w-0">
+                        <p className="text-muted-foreground text-xs font-medium break-words">
+                            {workspace?.name ?? 'POS'}
                         </p>
-                        <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-                            {workspace?.name ?? 'Dining tables'}
+                        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+                            Dining tables
                         </h1>
                     </div>
-                    <Link href="/pos" className="text-sm underline">
+                    <Link
+                        href={posIndex()}
+                        className="bg-card hover:bg-muted focus-visible:ring-ring border-border/60 inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+                    >
                         Back to POS
                     </Link>
                 </div>
@@ -65,26 +71,27 @@ export default function DiningTablesIndex({ workspace, floors }: Props) {
                             key={floor.id}
                             type="button"
                             onClick={() => setActiveFloorId(floor.id)}
+                            aria-pressed={activeFloor?.id === floor.id}
                             className={cn(
-                                'rounded-full border px-4 py-2 text-sm font-medium transition',
+                                'focus-visible:ring-ring min-h-11 max-w-full rounded-full border px-4 py-2 text-sm font-medium break-words focus-visible:ring-2 focus-visible:outline-none',
                                 activeFloor?.id === floor.id
                                     ? 'bg-primary text-primary-foreground border-transparent'
-                                    : 'hover:bg-muted',
+                                    : 'bg-card border-border/60 hover:bg-muted',
                             )}
                         >
                             {floor.name}
                         </button>
                     ))}
                 </div>
-                <Card>
-                    <CardHeader>
-                        <CardTitle>
+                <Card className="border-border/60 min-w-0 rounded-3xl shadow-none">
+                    <CardHeader className="px-4 sm:px-6">
+                        <CardTitle className="text-base break-words">
                             {activeFloor?.name ?? 'No floor configured'}
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-4 sm:px-6">
                         {!activeFloor || activeFloor.tables.length === 0 ? (
-                            <p className="text-muted-foreground text-sm">
+                            <p className="text-muted-foreground bg-muted/40 rounded-2xl border border-dashed px-4 py-12 text-center text-sm">
                                 Add a floor and tables in the admin panel to
                                 start seating guests.
                             </p>
@@ -93,14 +100,11 @@ export default function DiningTablesIndex({ workspace, floors }: Props) {
                                 {activeFloor.tables.map((table) => (
                                     <div
                                         key={table.id}
-                                        className={cn(
-                                            'flex min-h-36 flex-col justify-between rounded-xl border p-4',
-                                            statusClasses[table.status],
-                                        )}
+                                        className="bg-muted/30 border-border/60 flex min-h-52 min-w-0 flex-col justify-between gap-4 rounded-3xl border p-4"
                                     >
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div>
-                                                <h2 className="text-lg font-semibold">
+                                        <div className="flex flex-wrap items-start justify-between gap-2">
+                                            <div className="min-w-0">
+                                                <h2 className="text-base font-semibold break-words">
                                                     {table.name}
                                                 </h2>
                                                 <p className="text-muted-foreground text-xs">
@@ -109,13 +113,16 @@ export default function DiningTablesIndex({ workspace, floors }: Props) {
                                             </div>
                                             <Badge
                                                 variant="outline"
-                                                className="capitalize"
+                                                className={cn(
+                                                    'rounded-full px-3 py-1 capitalize',
+                                                    statusClasses[table.status],
+                                                )}
                                             >
                                                 {table.status}
                                             </Badge>
                                         </div>
                                         {table.current_order ? (
-                                            <p className="text-sm tabular-nums">
+                                            <p className="text-sm break-words tabular-nums">
                                                 Order #{table.current_order.id}{' '}
                                                 ·{' '}
                                                 {workspace?.currency_symbol ??
@@ -131,13 +138,19 @@ export default function DiningTablesIndex({ workspace, floors }: Props) {
                                         )}
                                         <Button
                                             variant="outline"
-                                            className="mt-3 w-full"
+                                            className="min-h-11 w-full rounded-full shadow-none"
                                             disabled={table.status !== 'free'}
                                             asChild={table.status === 'free'}
                                         >
                                             {table.status === 'free' ? (
                                                 <Link
-                                                    href={`/pos?table_id=${table.id}&order_type=dine_in`}
+                                                    href={posIndex({
+                                                        query: {
+                                                            table_id: table.id,
+                                                            order_type:
+                                                                'dine_in',
+                                                        },
+                                                    })}
                                                 >
                                                     Start order
                                                 </Link>
@@ -158,7 +171,7 @@ export default function DiningTablesIndex({ workspace, floors }: Props) {
 
 DiningTablesIndex.layout = {
     breadcrumbs: [
-        { title: 'POS', href: '/pos' },
-        { title: 'Tables', href: '/pos/tables' },
+        { title: 'POS', href: posIndex.url() },
+        { title: 'Tables', href: tablesIndex.url() },
     ],
 };

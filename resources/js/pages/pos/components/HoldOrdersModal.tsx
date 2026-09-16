@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -46,22 +47,25 @@ export default function HoldOrdersModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden p-0 sm:max-w-xl">
-                <DialogHeader className="shrink-0 border-b p-5">
-                    <div className="flex items-center gap-2">
+            <DialogContent className="bg-card [&_button]:focus-visible:outline-ring flex max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden rounded-3xl p-0 sm:max-w-xl [&_button]:min-h-11 [&_button]:min-w-11 [&_button]:focus-visible:outline-2 [&>button:last-child]:top-2 [&>button:last-child]:right-2 [&>button:last-child]:flex [&>button:last-child]:size-11 [&>button:last-child]:items-center [&>button:last-child]:justify-center [&>button:last-child]:rounded-full">
+                <DialogHeader className="border-border/60 max-h-[35dvh] shrink-0 overflow-y-auto border-b p-4 pr-14 text-left sm:p-5 sm:pr-16">
+                    <div className="flex flex-wrap items-center gap-2">
                         <PauseCircle className="text-primary size-5" />
-                        <DialogTitle className="text-xl font-bold">
-                            Parked / Held Orders
+                        <DialogTitle className="text-lg leading-snug font-semibold">
+                            Held Orders
                         </DialogTitle>
                         <Badge variant="secondary" className="ml-auto">
                             {heldOrders.length} held
                         </Badge>
                     </div>
+                    <DialogDescription className="text-xs">
+                        Resume a saved order when your guest is ready.
+                    </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex-1 space-y-3 overflow-y-auto p-5">
+                <div className="divide-border/60 min-h-0 flex-1 divide-y overflow-y-auto overscroll-contain p-4 sm:p-5">
                     {heldOrders.length === 0 ? (
-                        <div className="text-muted-foreground rounded-xl border border-dashed py-12 text-center text-sm">
+                        <div className="text-muted-foreground bg-muted/30 rounded-2xl px-4 py-12 text-center text-sm">
                             <Clock className="mx-auto mb-2 size-8 opacity-40" />
                             No parked orders currently held.
                         </div>
@@ -76,11 +80,11 @@ export default function HoldOrdersModal({
                             return (
                                 <div
                                     key={order.id}
-                                    className="bg-card hover:border-primary/50 flex flex-col justify-between gap-3 rounded-xl border p-4 shadow-sm transition-colors sm:flex-row sm:items-center"
+                                    className="flex flex-col justify-between gap-3 py-4 sm:flex-row sm:items-center"
                                 >
                                     <div className="min-w-0 space-y-1">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <span className="text-foreground text-base font-bold">
+                                            <span className="text-foreground text-base font-semibold break-words">
                                                 {order.label}
                                             </span>
                                             {order.tableName && (
@@ -102,7 +106,7 @@ export default function HoldOrdersModal({
                                             </Badge>
                                         </div>
 
-                                        <p className="text-muted-foreground flex items-center gap-2 text-xs">
+                                        <p className="text-muted-foreground flex flex-wrap items-center gap-2 text-xs">
                                             <span>
                                                 Parked at {order.heldAt}
                                             </span>
@@ -114,7 +118,7 @@ export default function HoldOrdersModal({
                                             {order.discountCode && (
                                                 <>
                                                     <span>•</span>
-                                                    <span className="font-medium text-emerald-600">
+                                                    <span className="font-medium text-emerald-600 dark:text-emerald-400">
                                                         Code:{' '}
                                                         {order.discountCode}
                                                     </span>
@@ -136,6 +140,7 @@ export default function HoldOrdersModal({
                                             className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                                             onClick={() => onDelete(order.id)}
                                             title="Discard order"
+                                            aria-label={`Discard held order ${order.label}`}
                                         >
                                             <Trash2 className="size-4" />
                                         </Button>
@@ -146,7 +151,8 @@ export default function HoldOrdersModal({
                                                 onRecall(order.id);
                                                 onClose();
                                             }}
-                                            className="gap-1.5 font-semibold"
+                                            aria-label={`Resume held order ${order.label}`}
+                                            className="h-11 gap-1.5 rounded-xl font-semibold"
                                         >
                                             <ArrowLeft className="size-3.5" />
                                             Resume Order
@@ -158,7 +164,7 @@ export default function HoldOrdersModal({
                     )}
                 </div>
 
-                <DialogFooter className="bg-muted/20 shrink-0 border-t p-4">
+                <DialogFooter className="bg-muted/30 border-border/60 max-h-[30dvh] shrink-0 flex-col gap-2 overflow-y-auto border-t p-4 sm:flex-row sm:justify-between [&>button]:w-full [&>button]:rounded-xl sm:[&>button]:w-auto">
                     <Button
                         type="button"
                         variant="outline"
