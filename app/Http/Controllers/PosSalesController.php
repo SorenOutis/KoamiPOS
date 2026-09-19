@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -12,10 +13,19 @@ class PosSalesController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
+        $validated = $request->validate([
+            'date_from' => ['nullable', 'date_format:Y-m-d'],
+            'date_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date_from'],
+        ]);
+
+        $dateFrom = $validated['date_from'] ?? null;
+        $dateTo = $validated['date_to'] ?? null;
 
         $orders = Order::forWorkspace($user->workspace_id)
             ->with(['cashier:id,name', 'items'])
             ->withCount('items')
+            ->when($dateFrom !== null, fn (Builder $query): Builder => $query->whereDate('created_at', '>=', $dateFrom))
+            ->when($dateTo !== null, fn (Builder $query): Builder => $query->whereDate('created_at', '<=', $dateTo))
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -29,6 +39,7 @@ class PosSalesController extends Controller
                 'tax_inclusive' => (bool) $user->workspace->tax_inclusive,
             ] : null,
             'orders' => $orders,
+            'filters' => ['date_from' => $dateFrom, 'date_to' => $dateTo],
         ]);
     }
 
