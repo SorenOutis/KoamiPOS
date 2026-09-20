@@ -1,4 +1,6 @@
 import { useState, useRef, useLayoutEffect } from 'react';
+import { getStringTint } from '@/lib/palette';
+import { cn } from '@/lib/utils';
 
 interface Props {
     src?: string | null;
@@ -56,9 +58,18 @@ export default function LetterFallbackImage({
             .map((segment) => segment.at(0)?.toUpperCase() ?? '')
             .join('') || '?';
 
+    const tint = getStringTint(alt);
+    const hasCustomBg = fallbackClassName.includes('bg-');
+    const hasCustomText = fallbackClassName.includes('text-');
+
     const letterFallback = (
         <div
-            className={`bg-muted text-muted-foreground flex items-center justify-center rounded-full text-[10px] leading-none font-semibold ${fallbackClassName}`}
+            className={cn(
+                'flex items-center justify-center rounded-full text-[10px] leading-none font-semibold transition-colors',
+                !hasCustomBg && tint.bg,
+                !hasCustomText && tint.text,
+                fallbackClassName,
+            )}
             style={{
                 width: imgSize,
                 height: imgSize,

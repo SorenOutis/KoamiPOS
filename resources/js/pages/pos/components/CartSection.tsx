@@ -351,17 +351,38 @@ export default function CartSection({
                                                 type="button"
                                                 size="icon"
                                                 variant="outline"
-                                                className="bg-muted/60 size-11 rounded-xl border-transparent"
-                                                onClick={() =>
-                                                    onUpdateQuantity(
-                                                        line.id,
-                                                        line.quantity - 1,
-                                                    )
+                                                className={cn(
+                                                    'size-11 rounded-xl border-transparent transition-colors',
+                                                    line.quantity <= 1
+                                                        ? 'text-muted-foreground hover:bg-destructive/10 hover:text-destructive bg-muted/60'
+                                                        : 'bg-muted/60 text-foreground hover:bg-muted',
+                                                )}
+                                                onClick={() => {
+                                                    if (line.quantity <= 1) {
+                                                        onRemoveLine(line.id);
+                                                    } else {
+                                                        onUpdateQuantity(
+                                                            line.id,
+                                                            line.quantity - 1,
+                                                        );
+                                                    }
+                                                }}
+                                                aria-label={
+                                                    line.quantity <= 1
+                                                        ? `Remove ${product.name} from order`
+                                                        : `Decrease quantity of ${product.name}`
                                                 }
-                                                aria-label={`Decrease quantity of ${product.name}`}
-                                                disabled={line.quantity <= 1}
+                                                title={
+                                                    line.quantity <= 1
+                                                        ? 'Remove from cart'
+                                                        : 'Decrease quantity'
+                                                }
                                             >
-                                                <Minus className="size-3" />
+                                                {line.quantity <= 1 ? (
+                                                    <Trash2 className="size-3.5" />
+                                                ) : (
+                                                    <Minus className="size-3" />
+                                                )}
                                             </Button>
                                             <span className="w-7 text-center text-xs font-bold tabular-nums">
                                                 {line.quantity}
@@ -370,7 +391,7 @@ export default function CartSection({
                                                 type="button"
                                                 size="icon"
                                                 variant="outline"
-                                                className="bg-muted/60 size-11 rounded-xl border-transparent"
+                                                className="bg-muted/60 text-foreground hover:bg-muted size-11 rounded-xl border-transparent"
                                                 onClick={() =>
                                                     onUpdateQuantity(
                                                         line.id,
@@ -540,7 +561,7 @@ export default function CartSection({
                     type="button"
                     onClick={onCheckout}
                     disabled={items.length === 0}
-                    className="h-12 w-full gap-2 rounded-2xl text-base font-semibold shadow-sm"
+                    className="h-12 w-full gap-2 rounded-2xl text-base font-semibold shadow-sm transition-all duration-100 hover:brightness-105 active:scale-[0.99]"
                 >
                     <span>
                         Pay {currencySymbol}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { PosProduct } from '@/components/ProductTile';
+import { getStringTint } from '@/lib/palette';
 import { cn } from '@/lib/utils';
 import { SlidersHorizontal } from 'lucide-react';
 
@@ -31,6 +32,7 @@ export default function PosProductTile({
             .slice(0, 2)
             .map((segment) => segment.at(0)?.toUpperCase() ?? '')
             .join('') || '?';
+    const tint = getStringTint(product.category?.name ?? product.name);
 
     return (
         <button
@@ -39,17 +41,25 @@ export default function PosProductTile({
             disabled={isSoldOut || isFullyInCart}
             title={`${product.name} · ${product.sku}${isFullyInCart ? ' · All available stock is in cart' : ''}`}
             className={cn(
-                'group bg-card border-border/60 relative flex min-h-11 min-w-0 flex-col gap-3 rounded-2xl border p-2 text-left select-none',
-                'enabled:hover:border-primary/40 enabled:hover:bg-accent/30 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                'group bg-card border-border/60 relative flex min-h-11 min-w-0 flex-col gap-3 rounded-2xl border p-2 text-left transition-all duration-150 select-none',
+                'enabled:hover:border-primary/50 enabled:hover:bg-accent/40 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none enabled:hover:shadow-xs enabled:active:scale-[0.98]',
                 isSoldOut && 'cursor-not-allowed opacity-60',
                 isFullyInCart &&
                     'cursor-not-allowed border-amber-300 dark:border-amber-700/50',
             )}
         >
-            <div className="bg-muted relative aspect-[4/3] w-full overflow-hidden rounded-xl">
+            <div
+                className={cn(
+                    'relative aspect-[4/3] w-full overflow-hidden rounded-xl transition-colors',
+                    tint.bg,
+                )}
+            >
                 <span
                     aria-hidden="true"
-                    className="text-muted-foreground/50 absolute inset-0 flex items-center justify-center text-4xl font-semibold tracking-tight"
+                    className={cn(
+                        'absolute inset-0 flex items-center justify-center text-3xl font-bold tracking-tight opacity-85 select-none',
+                        tint.text,
+                    )}
                 >
                     {initials}
                 </span>

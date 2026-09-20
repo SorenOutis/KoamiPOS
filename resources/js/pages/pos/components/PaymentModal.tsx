@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -56,7 +56,9 @@ export default function PaymentModal({
         'cash' | 'card' | 'ewallet'
     >('cash');
     const [tenderedInput, setTenderedInput] = useState('');
+    const [isDefaultTendered, setIsDefaultTendered] = useState(true);
     const [cardReference, setCardReference] = useState('');
+    const cashInputRef = useRef<HTMLInputElement>(null);
 
     // Split state
     const [splitLines, setSplitLines] = useState<SplitPaymentLine[]>([]);
@@ -71,12 +73,20 @@ export default function PaymentModal({
         if (isOpen) {
             setMode('single');
             setPaymentMethod('cash');
-            setTenderedInput(totalDue.toFixed(2));
+            const defaultTender = totalDue.toFixed(2);
+            setTenderedInput(defaultTender);
+            setIsDefaultTendered(true);
             setCardReference('');
             setSplitLines([]);
             setSplitMethod('cash');
             setSplitAmountInput('');
             setSplitTenderedInput('');
+
+            // Focus and auto-select tender input
+            requestAnimationFrame(() => {
+                cashInputRef.current?.focus();
+                cashInputRef.current?.select();
+            });
         }
     }, [isOpen, totalDue]);
 
@@ -110,14 +120,37 @@ export default function PaymentModal({
         if (mode === 'single') {
             if (key === 'C') {
                 setTenderedInput('');
-            } else if (key === 'backspace') {
-                setTenderedInput((prev) => prev.slice(0, -1));
-            } else if (key === '.') {
-                if (!tenderedInput.includes('.')) {
+                setIsDefaultTendered(false);
+                cashInputRef.current?.focus();
+                return;
+            }
+            if (key === 'backspace') {
+                if (isDefaultTendered) {
+                    setTenderedInput('');
+                    setIsDefaultTendered(false);
+                } else {
+                    setTenderedInput((prev) => prev.slice(0, -1));
+                }
+                cashInputRef.current?.focus();
+                return;
+            }
+            if (key === '.') {
+                if (isDefaultTendered) {
+                    setTenderedInput('0.');
+                    setIsDefaultTendered(false);
+                } else if (!tenderedInput.includes('.')) {
                     setTenderedInput((prev) =>
                         prev === '' ? '0.' : prev + '.',
                     );
                 }
+                cashInputRef.current?.focus();
+                return;
+            }
+
+            // Digit 0-9
+            if (isDefaultTendered) {
+                setTenderedInput(key);
+                setIsDefaultTendered(false);
             } else {
                 setTenderedInput((prev) => {
                     if (prev === '0') return key;
@@ -128,6 +161,15 @@ export default function PaymentModal({
                     return prev + key;
                 });
             }
+            cashInputRef.current?.focus();
+        }
+    }
+
+    function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const val = e.target.value;
+        if (val === '' || /^\d*\.?\d{0,2}$/.test(val)) {
+            setTenderedInput(val);
+            setIsDefaultTendered(false);
         }
     }
 
@@ -181,15 +223,26 @@ export default function PaymentModal({
         }
     }
 
-    function handleSubmit() {
+    const handleSubmit = useCallback(() => {
         if (mode === 'single') {
+            if (
+                paymentMethod === 'cash' &&
+                (!isSingleCashValid || parsedTendered < totalDue - 0.005)
+            ) {
+                return;
+            }
+            if (isProcessing) return;
             onCompleteSale({
                 paymentMethod,
                 tenderedAmount:
                     paymentMethod === 'cash' ? parsedTendered : null,
             });
         } else {
-            if (splitRemaining > 0.005 || splitLines.length === 0) {
+            if (
+                splitRemaining > 0.005 ||
+                splitLines.length === 0 ||
+                isProcessing
+            ) {
                 return;
             }
             onCompleteSale({
@@ -198,7 +251,71 @@ export default function PaymentModal({
                 splitPayments: splitLines,
             });
         }
-    }
+    }, [
+        mode,
+        paymentMethod,
+        isSingleCashValid,
+        parsedTendered,
+        totalDue,
+        isProcessing,
+        onCompleteSale,
+        splitRemaining,
+        splitLines,
+    ]);
+
+    // Keyboard shortcut handler
+    useEffect(() => {
+        if (!isOpen) return;
+
+        function handleKeyDown(e: KeyboardEvent) {
+            const target = e.target as HTMLElement | null;
+            const isCashInput = target === cashInputRef.current;
+            const isOtherInput =
+                target &&
+                target !== cashInputRef.current &&
+                (target.tagName === 'INPUT' ||
+                    target.tagName === 'TEXTAREA' ||
+                    target.isContentEditable);
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSubmit();
+                return;
+            }
+
+            if (isOtherInput) return;
+
+            // Physical keyboard support for cash tender in single mode
+            if (mode === 'single' && paymentMethod === 'cash') {
+                if (!isCashInput) {
+                    if (/^[0-9]$/.test(e.key)) {
+                        e.preventDefault();
+                        handleNumpad(e.key);
+                    } else if (e.key === '.') {
+                        e.preventDefault();
+                        handleNumpad('.');
+                    } else if (e.key === 'Backspace') {
+                        e.preventDefault();
+                        handleNumpad('backspace');
+                    } else if (e.key === 'c' || e.key === 'C') {
+                        e.preventDefault();
+                        handleNumpad('C');
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [
+        isOpen,
+        mode,
+        paymentMethod,
+        isSingleCashValid,
+        isProcessing,
+        splitRemaining,
+        handleSubmit,
+    ]);
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -340,20 +457,48 @@ export default function PaymentModal({
                                     {/* Display Box */}
                                     <div className="bg-muted/40 grid grid-cols-1 gap-3 rounded-2xl p-4 min-[400px]:grid-cols-2">
                                         <div>
-                                            <span className="text-muted-foreground block text-xs font-semibold">
+                                            <Label
+                                                htmlFor="cash-tendered-input"
+                                                className="text-muted-foreground block text-xs font-semibold"
+                                            >
                                                 Cash Tendered
-                                            </span>
-                                            <div className="mt-1 flex items-baseline gap-1">
-                                                <span className="text-muted-foreground text-lg font-bold">
+                                            </Label>
+                                            <div className="relative mt-1 flex items-center">
+                                                <span className="text-muted-foreground pointer-events-none absolute left-3.5 text-lg font-bold">
                                                     {currencySymbol}
                                                 </span>
-                                                <span className="text-foreground text-2xl font-bold tabular-nums">
-                                                    {tenderedInput || '0.00'}
-                                                </span>
+                                                <Input
+                                                    id="cash-tendered-input"
+                                                    ref={cashInputRef}
+                                                    type="text"
+                                                    inputMode="decimal"
+                                                    autoComplete="off"
+                                                    value={tenderedInput}
+                                                    onChange={handleInputChange}
+                                                    onFocus={(e) => {
+                                                        e.target.select();
+                                                    }}
+                                                    placeholder={totalDue.toFixed(
+                                                        2,
+                                                    )}
+                                                    className="border-border/60 focus-visible:ring-primary h-12 w-full rounded-xl pr-3 pl-8 text-2xl font-bold tabular-nums shadow-none"
+                                                />
                                             </div>
+                                            {paymentMethod === 'cash' &&
+                                                parsedTendered <
+                                                    totalDue - 0.005 && (
+                                                    <p className="text-destructive mt-1 text-[11px] font-medium">
+                                                        Short by{' '}
+                                                        {currencySymbol}
+                                                        {(
+                                                            totalDue -
+                                                            parsedTendered
+                                                        ).toFixed(2)}
+                                                    </p>
+                                                )}
                                         </div>
 
-                                        <div className="text-right">
+                                        <div className="flex flex-col justify-between text-right">
                                             <span className="text-muted-foreground block text-xs font-semibold">
                                                 Change Due
                                             </span>
@@ -361,7 +506,7 @@ export default function PaymentModal({
                                                 <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                                                     {currencySymbol}
                                                 </span>
-                                                <span className="text-2xl font-bold text-emerald-600 tabular-nums">
+                                                <span className="text-3xl font-bold text-emerald-600 tabular-nums">
                                                     {changeDue.toFixed(2)}
                                                 </span>
                                             </div>
@@ -379,13 +524,17 @@ export default function PaymentModal({
                                                     <button
                                                         key={`${amount}-${idx}`}
                                                         type="button"
-                                                        onClick={() =>
+                                                        onClick={() => {
                                                             setTenderedInput(
                                                                 amount.toFixed(
                                                                     2,
                                                                 ),
-                                                            )
-                                                        }
+                                                            );
+                                                            setIsDefaultTendered(
+                                                                false,
+                                                            );
+                                                            cashInputRef.current?.focus();
+                                                        }}
                                                         className="bg-muted/60 hover:bg-muted text-foreground rounded-xl border px-1 py-2.5 text-center text-sm font-bold tabular-nums transition-colors"
                                                     >
                                                         {idx === 0

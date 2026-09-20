@@ -231,16 +231,10 @@ function PosIndex({
 
             setStockWarning(null);
 
-            // If product has modifiers, open configuration dialog
-            if (product.modifiers && product.modifiers.length > 0) {
-                setConfiguringProduct(product);
-                return;
-            }
-
-            // Direct add if no modifiers
-            addToCart(product);
+            // Open configuration and modifier dialog
+            setConfiguringProduct(product);
         },
-        [cart, addToCart],
+        [cart],
     );
 
     // Modifier Dialog Confirmation
@@ -628,6 +622,9 @@ function PosIndex({
                 product={configuringProduct}
                 isOpen={configuringProduct !== null}
                 currencySymbol={currencySymbol}
+                quantityInCart={
+                    configuringProduct ? (cart[configuringProduct.id] ?? 0) : 0
+                }
                 onClose={() => setConfiguringProduct(null)}
                 onConfirm={handleConfirmModifiers}
             />
