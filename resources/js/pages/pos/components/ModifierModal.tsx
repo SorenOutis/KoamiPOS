@@ -22,6 +22,7 @@ type Props = {
     product: PosProduct | null;
     isOpen: boolean;
     currencySymbol: string;
+    quantityInCart?: number;
     onClose: () => void;
     onConfirm: (
         modifiers: CartModifierSelection[],
@@ -34,6 +35,7 @@ export default function ModifierModal({
     product,
     isOpen,
     currencySymbol,
+    quantityInCart = 0,
     onClose,
     onConfirm,
 }: Props) {
@@ -160,6 +162,11 @@ export default function ModifierModal({
         );
         return Number(product.price) + modDelta;
     }, [product, flatModifiers]);
+
+    const usableStock = Math.max(
+        1,
+        (product?.stock_quantity ?? 1) - quantityInCart,
+    );
 
     const lineTotal = unitPrice * quantity;
 
@@ -315,7 +322,8 @@ export default function ModifierModal({
                                 Quantity
                             </span>
                             <span className="text-muted-foreground text-xs">
-                                Stock available: {product.stock_quantity}
+                                Available to add: {usableStock}
+                                {quantityInCart > 0 && ` (${quantityInCart} in cart)`}
                             </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -342,11 +350,11 @@ export default function ModifierModal({
                                 className="size-11 rounded-xl"
                                 onClick={() =>
                                     setQuantity((q) =>
-                                        Math.min(product.stock_quantity, q + 1),
+                                        Math.min(usableStock, q + 1),
                                     )
                                 }
                                 aria-label="Increase quantity"
-                                disabled={quantity >= product.stock_quantity}
+                                disabled={quantity >= usableStock}
                             >
                                 <Plus className="size-4" />
                             </Button>

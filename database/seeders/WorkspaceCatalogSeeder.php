@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Discount;
+use App\Models\Modifier;
+use App\Models\ModifierOption;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -97,6 +99,8 @@ class WorkspaceCatalogSeeder extends Seeder
             );
         });
 
+        static::seedModifiers($workspace);
+
         if ($withOrders) {
             $cashier = User::where('workspace_id', $workspace->id)
                 ->where('role', 'cashier')
@@ -131,6 +135,89 @@ class WorkspaceCatalogSeeder extends Seeder
                             'total' => round((float) $product->price * 2, 2),
                         ]);
                     }
+                }
+            }
+        }
+    }
+
+    public static function seedModifiers(Workspace $workspace): void
+    {
+        $modifierGroups = [
+            'Drink Temperature / Ice' => [
+                'required' => true,
+                'min' => 1,
+                'max' => 1,
+                'options' => [
+                    ['name' => 'Regular ice', 'price_delta' => 0],
+                    ['name' => 'Less ice', 'price_delta' => 0],
+                    ['name' => 'No ice', 'price_delta' => 0],
+                ],
+                'products' => ['BEV-TEA-500', 'BEV-WATER-500'],
+            ],
+            'Sweetness Level' => [
+                'required' => true,
+                'min' => 1,
+                'max' => 1,
+                'options' => [
+                    ['name' => '100% Regular', 'price_delta' => 0],
+                    ['name' => '50% Less Sweet', 'price_delta' => 0],
+                    ['name' => '0% Unsweetened', 'price_delta' => 0],
+                ],
+                'products' => ['BEV-TEA-500', 'BEV-COFFEE-3IN1'],
+            ],
+            'Beverage Add-ons' => [
+                'required' => false,
+                'min' => 0,
+                'max' => 2,
+                'options' => [
+                    ['name' => 'Extra Shot', 'price_delta' => 15],
+                    ['name' => 'Whipped Cream', 'price_delta' => 20],
+                    ['name' => 'Brown Sugar Pearls', 'price_delta' => 20],
+                ],
+                'products' => ['BEV-TEA-500', 'BEV-COFFEE-3IN1'],
+            ],
+            'Snack Dip' => [
+                'required' => false,
+                'min' => 0,
+                'max' => 2,
+                'options' => [
+                    ['name' => 'Cheddar Cheese Dip', 'price_delta' => 20],
+                    ['name' => 'Sour Cream & Onion Dip', 'price_delta' => 20],
+                ],
+                'products' => ['SNK-CHIPS-55'],
+            ],
+        ];
+
+        foreach ($modifierGroups as $name => $group) {
+            $modifier = Modifier::firstOrCreate(
+                ['workspace_id' => $workspace->id, 'name' => $name],
+                [
+                    'workspace_id' => $workspace->id,
+                    'name' => $name,
+                    'is_required' => $group['required'],
+                    'min_selections' => $group['min'],
+                    'max_selections' => $group['max'],
+                ],
+            );
+
+            foreach ($group['options'] as $opt) {
+                ModifierOption::firstOrCreate(
+                    ['modifier_id' => $modifier->id, 'name' => $opt['name']],
+                    [
+                        'modifier_id' => $modifier->id,
+                        'name' => $opt['name'],
+                        'price_delta' => $opt['price_delta'],
+                    ],
+                );
+            }
+
+            foreach ($group['products'] as $sku) {
+                $product = Product::where('workspace_id', $workspace->id)
+                    ->where('sku', $sku)
+                    ->first();
+
+                if ($product && ! $product->modifiers()->where('modifier_id', $modifier->id)->exists()) {
+                    $product->modifiers()->attach($modifier->id);
                 }
             }
         }
