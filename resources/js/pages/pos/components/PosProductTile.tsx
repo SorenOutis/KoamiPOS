@@ -41,8 +41,8 @@ export default function PosProductTile({
             disabled={isSoldOut || isFullyInCart}
             title={`${product.name} · ${product.sku}${isFullyInCart ? ' · All available stock is in cart' : ''}`}
             className={cn(
-                'group bg-card border-border/60 relative flex min-h-11 min-w-0 flex-col gap-3 rounded-2xl border p-2 text-left select-none transition-all duration-150',
-                'enabled:hover:border-primary/50 enabled:hover:bg-accent/40 enabled:hover:shadow-xs enabled:active:scale-[0.98] focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                'group bg-card border-border/60 relative flex min-h-11 min-w-0 flex-col gap-3 rounded-2xl border p-2 text-left transition-all duration-150 select-none',
+                'enabled:hover:border-primary/50 enabled:hover:bg-accent/40 focus-visible:ring-primary focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none enabled:hover:shadow-xs enabled:active:scale-[0.98]',
                 isSoldOut && 'cursor-not-allowed opacity-60',
                 isFullyInCart &&
                     'cursor-not-allowed border-amber-300 dark:border-amber-700/50',
@@ -57,7 +57,7 @@ export default function PosProductTile({
                 <span
                     aria-hidden="true"
                     className={cn(
-                        'absolute inset-0 flex items-center justify-center text-3xl font-bold tracking-tight select-none opacity-85',
+                        'absolute inset-0 flex items-center justify-center text-3xl font-bold tracking-tight opacity-85 select-none',
                         tint.text,
                     )}
                 >

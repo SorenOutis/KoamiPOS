@@ -75,7 +75,9 @@ function getOrderUrgency(order: KdsOrder, currentTime: number) {
 
     const elapsedMinutes = Math.max(
         0,
-        Math.floor((currentTime - new Date(order.created_at).getTime()) / 60000),
+        Math.floor(
+            (currentTime - new Date(order.created_at).getTime()) / 60000,
+        ),
     );
 
     if (elapsedMinutes >= 15) {
@@ -197,27 +199,40 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
                     {/* Ticket Urgency & Volume Metric Bar */}
                     <div className="bg-card border-border/60 flex flex-wrap items-center gap-2 rounded-2xl border p-2.5 sm:gap-4 sm:px-4">
                         <div className="text-muted-foreground text-xs font-semibold">
-                            Tickets: <span className="text-foreground font-bold tabular-nums">{orders.length}</span>
+                            Tickets:{' '}
+                            <span className="text-foreground font-bold tabular-nums">
+                                {orders.length}
+                            </span>
                         </div>
                         <div className="bg-border h-4 w-px shrink-0" />
                         <div className="flex items-center gap-1.5 text-xs">
                             <span className="size-2 rounded-full bg-amber-500" />
-                            <span className="text-muted-foreground">In Prep:</span>
-                            <span className="text-foreground font-bold tabular-nums">{preparingCount}</span>
+                            <span className="text-muted-foreground">
+                                In Prep:
+                            </span>
+                            <span className="text-foreground font-bold tabular-nums">
+                                {preparingCount}
+                            </span>
                         </div>
                         <div className="bg-border h-4 w-px shrink-0" />
                         <div className="flex items-center gap-1.5 text-xs">
                             <span className="size-2 rounded-full bg-emerald-500" />
-                            <span className="text-muted-foreground">Ready to Serve:</span>
-                            <span className="text-emerald-600 dark:text-emerald-400 font-bold tabular-nums">{readyCount}</span>
+                            <span className="text-muted-foreground">
+                                Ready to Serve:
+                            </span>
+                            <span className="font-bold text-emerald-600 tabular-nums dark:text-emerald-400">
+                                {readyCount}
+                            </span>
                         </div>
                         {overdueCount > 0 && (
                             <>
                                 <div className="bg-border h-4 w-px shrink-0" />
-                                <div className="flex items-center gap-1.5 text-xs text-destructive font-semibold">
-                                    <span className="size-2 rounded-full bg-destructive animate-ping" />
+                                <div className="text-destructive flex items-center gap-1.5 text-xs font-semibold">
+                                    <span className="bg-destructive size-2 animate-ping rounded-full" />
                                     <span>Overdue (&gt;15m):</span>
-                                    <span className="tabular-nums">{overdueCount}</span>
+                                    <span className="tabular-nums">
+                                        {overdueCount}
+                                    </span>
                                 </div>
                             </>
                         )}
@@ -235,7 +250,7 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
                                     <Card
                                         key={order.id}
                                         className={cn(
-                                            'min-w-0 gap-0 overflow-hidden rounded-3xl transition-all duration-200 shadow-none border',
+                                            'min-w-0 gap-0 overflow-hidden rounded-3xl border shadow-none transition-all duration-200',
                                             urgency.cardBorderClass,
                                         )}
                                     >
@@ -251,9 +266,18 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
                                                     <CardTitle className="text-base font-bold">
                                                         Ticket #{order.id}
                                                     </CardTitle>
-                                                    <p className="text-muted-foreground mt-1 text-xs break-words font-medium">
-                                                        {order.table?.name ? `Table ${order.table.name}` : order.order_type.replace('_', ' ')}{' '}
-                                                        · {order.guest_count} guest{order.guest_count === 1 ? '' : 's'}
+                                                    <p className="text-muted-foreground mt-1 text-xs font-medium break-words">
+                                                        {order.table?.name
+                                                            ? `Table ${order.table.name}`
+                                                            : order.order_type.replace(
+                                                                  '_',
+                                                                  ' ',
+                                                              )}{' '}
+                                                        · {order.guest_count}{' '}
+                                                        guest
+                                                        {order.guest_count === 1
+                                                            ? ''
+                                                            : 's'}
                                                     </p>
                                                 </div>
                                                 <Badge
@@ -277,11 +301,13 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
                                                             updateItem(item)
                                                         }
                                                         className={cn(
-                                                            'border-border/60 min-h-11 min-w-0 rounded-2xl border p-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-ring',
-                                                            item.kds_status === 'ready'
-                                                                ? 'bg-emerald-500/10 border-emerald-500/30'
-                                                                : item.kds_status === 'preparing'
-                                                                  ? 'bg-amber-500/10 border-amber-500/30'
+                                                            'border-border/60 focus-visible:ring-ring min-h-11 min-w-0 rounded-2xl border p-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none',
+                                                            item.kds_status ===
+                                                                'ready'
+                                                                ? 'border-emerald-500/30 bg-emerald-500/10'
+                                                                : item.kds_status ===
+                                                                    'preparing'
+                                                                  ? 'border-amber-500/30 bg-amber-500/10'
                                                                   : 'bg-muted/40 hover:bg-muted',
                                                         )}
                                                     >
@@ -289,38 +315,57 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
                                                             <span
                                                                 className={cn(
                                                                     'min-w-0 text-sm font-medium break-words',
-                                                                    item.kds_status === 'ready' &&
-                                                                        'text-emerald-800 dark:text-emerald-300 font-semibold',
+                                                                    item.kds_status ===
+                                                                        'ready' &&
+                                                                        'font-semibold text-emerald-800 dark:text-emerald-300',
                                                                 )}
                                                             >
                                                                 <strong>
-                                                                    {item.quantity}×
+                                                                    {
+                                                                        item.quantity
+                                                                    }
+                                                                    ×
                                                                 </strong>{' '}
-                                                                {item.product_name}
+                                                                {
+                                                                    item.product_name
+                                                                }
                                                             </span>
                                                             <span
                                                                 className={cn(
                                                                     'rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize',
-                                                                    item.kds_status === 'ready'
+                                                                    item.kds_status ===
+                                                                        'ready'
                                                                         ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300'
-                                                                        : item.kds_status === 'preparing'
+                                                                        : item.kds_status ===
+                                                                            'preparing'
                                                                           ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300'
                                                                           : 'bg-card text-muted-foreground',
                                                                 )}
                                                             >
-                                                                {item.kds_status}
+                                                                {
+                                                                    item.kds_status
+                                                                }
                                                             </span>
                                                         </div>
-                                                        {item.modifiers.length > 0 && (
+                                                        {item.modifiers.length >
+                                                            0 && (
                                                             <p className="text-muted-foreground mt-1.5 text-xs break-words">
                                                                 {item.modifiers
-                                                                    .map((m) => m.name)
-                                                                    .join(' · ')}
+                                                                    .map(
+                                                                        (m) =>
+                                                                            m.name,
+                                                                    )
+                                                                    .join(
+                                                                        ' · ',
+                                                                    )}
                                                             </p>
                                                         )}
                                                         {item.prep_notes && (
-                                                            <p className="mt-1.5 text-xs break-words text-amber-800 dark:text-amber-300 font-medium">
-                                                                Note: {item.prep_notes}
+                                                            <p className="mt-1.5 text-xs font-medium break-words text-amber-800 dark:text-amber-300">
+                                                                Note:{' '}
+                                                                {
+                                                                    item.prep_notes
+                                                                }
                                                             </p>
                                                         )}
                                                     </button>
@@ -328,7 +373,8 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
                                             </div>
                                             {order.kitchen_notes && (
                                                 <p className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs break-words text-amber-800 dark:text-amber-200">
-                                                    Kitchen note: {order.kitchen_notes}
+                                                    Kitchen note:{' '}
+                                                    {order.kitchen_notes}
                                                 </p>
                                             )}
                                             <Button
@@ -336,11 +382,15 @@ export default function KitchenDisplayIndex({ workspace, orders }: Props) {
                                                     'min-h-12 w-full rounded-2xl text-sm font-bold shadow-sm transition-all duration-150 active:scale-[0.99]',
                                                     urgency.buttonClasses,
                                                 )}
-                                                onClick={() => updateOrder(order)}
+                                                onClick={() =>
+                                                    updateOrder(order)
+                                                }
                                             >
-                                                {order.kds_status === 'preparing'
+                                                {order.kds_status ===
+                                                'preparing'
                                                     ? 'Mark Ticket Ready'
-                                                    : order.kds_status === 'ready'
+                                                    : order.kds_status ===
+                                                        'ready'
                                                       ? 'Bump Ticket (Served)'
                                                       : 'Start Prep'}
                                             </Button>

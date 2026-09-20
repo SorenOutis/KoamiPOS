@@ -478,15 +478,22 @@ export default function PaymentModal({
                                                     onFocus={(e) => {
                                                         e.target.select();
                                                     }}
-                                                    placeholder={totalDue.toFixed(2)}
-                                                    className="border-border/60 focus-visible:ring-primary h-12 w-full rounded-xl pl-8 pr-3 text-2xl font-bold tabular-nums shadow-none"
+                                                    placeholder={totalDue.toFixed(
+                                                        2,
+                                                    )}
+                                                    className="border-border/60 focus-visible:ring-primary h-12 w-full rounded-xl pr-3 pl-8 text-2xl font-bold tabular-nums shadow-none"
                                                 />
                                             </div>
                                             {paymentMethod === 'cash' &&
-                                                parsedTendered < totalDue - 0.005 && (
+                                                parsedTendered <
+                                                    totalDue - 0.005 && (
                                                     <p className="text-destructive mt-1 text-[11px] font-medium">
-                                                        Short by {currencySymbol}
-                                                        {(totalDue - parsedTendered).toFixed(2)}
+                                                        Short by{' '}
+                                                        {currencySymbol}
+                                                        {(
+                                                            totalDue -
+                                                            parsedTendered
+                                                        ).toFixed(2)}
                                                     </p>
                                                 )}
                                         </div>

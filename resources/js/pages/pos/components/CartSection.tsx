@@ -391,7 +391,7 @@ export default function CartSection({
                                                 type="button"
                                                 size="icon"
                                                 variant="outline"
-                                                className="bg-muted/60 size-11 rounded-xl border-transparent text-foreground hover:bg-muted"
+                                                className="bg-muted/60 text-foreground hover:bg-muted size-11 rounded-xl border-transparent"
                                                 onClick={() =>
                                                     onUpdateQuantity(
                                                         line.id,

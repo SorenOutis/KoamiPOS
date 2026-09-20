@@ -623,9 +623,7 @@ function PosIndex({
                 isOpen={configuringProduct !== null}
                 currencySymbol={currencySymbol}
                 quantityInCart={
-                    configuringProduct
-                        ? (cart[configuringProduct.id] ?? 0)
-                        : 0
+                    configuringProduct ? (cart[configuringProduct.id] ?? 0) : 0
                 }
                 onClose={() => setConfiguringProduct(null)}
                 onConfirm={handleConfirmModifiers}

@@ -323,7 +323,8 @@ export default function ModifierModal({
                             </span>
                             <span className="text-muted-foreground text-xs">
                                 Available to add: {usableStock}
-                                {quantityInCart > 0 && ` (${quantityInCart} in cart)`}
+                                {quantityInCart > 0 &&
+                                    ` (${quantityInCart} in cart)`}
                             </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">

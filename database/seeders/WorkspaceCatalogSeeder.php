@@ -25,11 +25,11 @@ class WorkspaceCatalogSeeder extends Seeder
     public function run(): void
     {
         Workspace::query()->each(function (Workspace $workspace): void {
-            static::seedWorkspace($workspace, withOrders: true);
+            static::seedWorkspace($workspace, withOrders: true, withModifiers: true);
         });
     }
 
-    public static function seedWorkspace(Workspace $workspace, bool $withOrders = false): void
+    public static function seedWorkspace(Workspace $workspace, bool $withOrders = false, bool $withModifiers = false): void
     {
         $categories = collect([
             ['name' => 'Beverages', 'description' => 'Drinks and refreshments'],
@@ -99,7 +99,9 @@ class WorkspaceCatalogSeeder extends Seeder
             );
         });
 
-        static::seedModifiers($workspace);
+        if ($withModifiers) {
+            static::seedModifiers($workspace);
+        }
 
         if ($withOrders) {
             $cashier = User::where('workspace_id', $workspace->id)
@@ -144,8 +146,8 @@ class WorkspaceCatalogSeeder extends Seeder
     {
         $modifierGroups = [
             'Drink Temperature / Ice' => [
-                'required' => true,
-                'min' => 1,
+                'required' => false,
+                'min' => 0,
                 'max' => 1,
                 'options' => [
                     ['name' => 'Regular ice', 'price_delta' => 0],
@@ -155,8 +157,8 @@ class WorkspaceCatalogSeeder extends Seeder
                 'products' => ['BEV-TEA-500', 'BEV-WATER-500'],
             ],
             'Sweetness Level' => [
-                'required' => true,
-                'min' => 1,
+                'required' => false,
+                'min' => 0,
                 'max' => 1,
                 'options' => [
                     ['name' => '100% Regular', 'price_delta' => 0],
